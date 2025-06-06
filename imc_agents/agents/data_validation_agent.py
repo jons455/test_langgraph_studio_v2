@@ -1,5 +1,5 @@
-from langgraph.graph import StateGraph
-from langchain_core.messages import AIMessage, HumanMessage
+from langgraph.graph import StateGraph, END
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel, Field, ValidationError
 from typing import List
 from enum import Enum
@@ -31,32 +31,31 @@ def check_data_node(state: State):
     Liest CSV-Datei aus dem State, führt alle Datenprüfungen durch (MLFB, Distributor, Customer, Financial, General)
     und speichert eine technische Zusammenfassung sowie die strukturierten Ergebnisse ins State-Objekt.
     """
-
     if state.get("file_checked"):
         return {
-            **state,
-            "messages": state["messages"] + [AIMessage(content="✅ Datei wurde bereits geprüft, kein erneuter Check notwendig.")]
+            "messages": state["messages"] + [AIMessage(content="✅ Die Datei wurde bereits geprüft. Wenn Sie eine neue Prüfung wünschen, laden Sie bitte eine neue Datei hoch.")],
+            "__routing__": "end"
         }
 
     file_path = state.get("file_path")
     if not file_path:
         return {
-            **state,
-            "messages": state["messages"] + [AIMessage(content="❌ Fehler: Kein Dateipfad angegeben.")]
+            "messages": state["messages"] + [AIMessage(content="Ich habe keine Datei zum Prüfen. Bitte laden Sie zuerst eine Datei hoch.")],
+            "__routing__": "end"
         }
 
     try:
         df = data_checker.read_csv_file(file_path)
     except RuntimeError as e:
         return {
-            **state,
-            "messages": state["messages"] + [AIMessage(content=f"❌ Fehler beim Einlesen der Datei: {str(e)}")]
+            "messages": state["messages"] + [AIMessage(content=f"❌ Fehler beim Einlesen der Datei: {str(e)}")],
+            "__routing__": "end"
         }
 
     if df.empty:
         return {
-            **state,
-            "messages": state["messages"] + [AIMessage(content="❌ Fehler: Datei ist leer.")]
+            "messages": state["messages"] + [AIMessage(content="❌ Fehler: Die Datei ist leer.")],
+            "__routing__": "end"
         }
 
     # Starte alle definierten Checks
@@ -78,30 +77,30 @@ def check_data_node(state: State):
     summary = []
 
     if mlfb_results:
-        summary.append("✅ MLFB-Check:")
+        summary.append("✅ MLFB-Prüfung:")
         for res in mlfb_results:
             summary.append(f"  → {res}")
 
     if distributor_results:
-        summary.append("✅ Distributor Data Check:")
+        summary.append("✅ Händlerdatenprüfung:")
         for key, values in distributor_results.items():
             if values and isinstance(values, list):
                 summary.append(f"  → {key}: {', '.join(map(str, values))}")
 
     if customer_results:
-        summary.append("✅ Customer Data Check:")
+        summary.append("✅ Kundendatenprüfung:")
         for key, values in customer_results.items():
             if values and isinstance(values, list):
                 summary.append(f"  → {key}: {', '.join(map(str, values))}")
 
     if financial_results:
-        summary.append("✅ Financial Data Check:")
+        summary.append("✅ Finanzdatenprüfung:")
         for key, values in financial_results.items():
             if values and isinstance(values, list):
                 summary.append(f"  → {key}: {', '.join(map(str, values))}")
 
     if general_results:
-        summary.append("✅ General Data Check:")
+        summary.append("✅ Allgemeine Datenprüfung:")
         for key, values in general_results.items():
             if values and isinstance(values, list):
                 summary.append(f"  → {key}: {', '.join(map(str, values))}")
@@ -112,10 +111,56 @@ def check_data_node(state: State):
     summary_text = "\n".join(summary)
 
     return {
-        **state,
         "check_results": all_results,
         "last_action": "CHECK",
-        "messages": state["messages"] + [AIMessage(content=f"Datenprüfung abgeschlossen:\n{summary_text}")]
+        "technical_summary": summary_text,
+        "file_checked": True,
+        "__routing__": "generate_response"
+    }
+
+
+def response_generation_node(state: State):
+    """
+    Generates a natural language response based on the technical summary from the check_data_node.
+    """
+    technical_summary = state.get("technical_summary")
+    if not technical_summary:
+        return {
+             "messages": state["messages"] + [AIMessage(content="Die Datenprüfung wurde durchgeführt, aber es liegt keine Zusammenfassung vor.")]
+        }
+
+    prompt = f"""
+Du bist ein professioneller und freundlicher Daten-Analyst für Siemens.
+Deine Aufgabe ist es, einen technischen Prüfbericht in eine hilfreiche, dialogorientierte Zusammenfassung für einen Benutzer zu übersetzen.
+
+**Dein Stil:**
+- Sprich den Benutzer direkt und freundlich an.
+- Formuliere die Ergebnisse in ganzen Sätzen und natürlicher Sprache.
+- Sei klar und prägnant.
+
+**Anweisungen für den Inhalt:**
+1.  Beginne mit einer freundlichen Einleitung (z.B. "Ich habe Ihre Datei geprüft und einige Punkte gefunden, die wir uns ansehen sollten.").
+2.  Fasse die Probleme nach Themen zusammen (z.B. "Kundendaten", "Finanzdaten").
+3.  Nenne bei jedem Problem die betroffene Spalte (in `GROSSBUCHSTABEN`) und gib **ein konkretes Beispiel** für einen fehlerhaften Eintrag an, falls verfügbar. Zum Beispiel: "In der Spalte `QUANTITY` habe ich in Zeile 420 den Text 'LONDON' gefunden, wo eine Zahl erwartet wird."
+4.  Wenn alles in Ordnung ist, bestätige dies in einem positiven Satz.
+5.  Beende deine Antwort **immer** mit einem Angebot zur direkten Hilfe. Frage den Benutzer, ob du die Korrekturen für ihn vornehmen sollst. Etwa so: "Ich kann diese Fehler für Sie korrigieren. Sagen Sie mir einfach, welche Änderungen Sie vornehmen möchten, z.B. 'Korrigiere in Zeile 123 die Spalte XYZ auf den Wert 456'."
+
+**Wichtige Formatierungsregeln:**
+- Die gesamte Antwort muss auf **Deutsch** sein.
+- Formatiere die Antwort ansprechend mit Absätzen, aber verwende **keinerlei Markdown** (keine Listen, kein Fettdruck etc.). Die Ausgabe muss reiner Text sein.
+
+**Technischer Prüfbericht:**
+---
+{technical_summary}
+---
+
+Bitte erstelle jetzt die benutzerfreundliche und interaktive Zusammenfassung.
+"""
+    
+    response_text = llm.invoke([SystemMessage(content=prompt)]).content
+
+    return {
+        "messages": state["messages"] + [AIMessage(content=response_text)]
     }
 
 
@@ -131,9 +176,9 @@ def response_generation(state: State):
             "Der Bericht soll enthalten:\n"
             "- Problematische SPALTEN (immer in GROSSBUCHSTABEN).\n"
             "- ZEILENNUMMERN, wo Probleme auftreten.\n"
-            "- Kurze Erklärung, was falsch ist.\n"
-            "- Wenn alles gültig ist, das explizit erwähnen.\n"
-            "- Klare Absätze pro Themenblock (MLFB, Distributor, Customer, Financial, General).\n\n"
+            "- Eine kurze Erklärung, was falsch ist.\n"
+            "- Wenn alles gültig ist, erwähne das explizit.\n"
+            "- Klare Absätze für jeden Themenblock (MLFB, Distributor, Customer, Financial, General).\n\n"
             f"Technische Zusammenfassung:\n{full_summary}"
         )
 
@@ -153,11 +198,16 @@ def response_generation(state: State):
             f"Technische Zusammenfassung:\n{full_summary}"
         )
 
-    response = llm.invoke([AIMessage(content=prompt)])
+    response_text = llm.invoke([AIMessage(content=prompt)]).content
+
+    # Gruß bei der ersten Interaktion voranstellen
+    if not state.get("has_greeted"):
+        greeting = "Hallo, ich unterstütze Sie gerne! Was kann ich für Sie tun? Kann ich Ihnen bei der Anbindung Ihres Systems helfen oder soll ich Ihre Daten prüfen?"
+        response_text = f"{greeting}\n\n{response_text}"
 
     return {
-        **state,
-        "messages": state["messages"] + [AIMessage(content="Antwort generiert."), response]
+        "messages": [AIMessage(content="Antwort generiert."), AIMessage(content=response_text)],
+        "has_greeted": True
     }
 
 
@@ -177,8 +227,8 @@ def apply_updates_node(state: State):
     file_path = state.get("improved_file_path") or state.get("file_path")
     if not file_path or not os.path.exists(file_path):
         return {
-            **state,
-            "messages": state["messages"] + [AIMessage(content="❌ Keine Datei zum Aktualisieren gefunden.")]
+            "messages": state["messages"] + [AIMessage(content="Ich habe keine Datei zum Anwenden von Änderungen. Bitte laden Sie zuerst eine Datei hoch.")],
+            "__routing__": "end"
         }
 
     df = pd.read_csv(file_path)
@@ -196,41 +246,30 @@ def apply_updates_node(state: State):
     user_message = state.get("user_message", "")
 
     prompt = f"""
-You are an expert JSON-generating assistant. Your sole purpose is to output a valid JSON object that conforms to a provided Pydantic schema.
+Du bist ein sorgfältiger Assistent, der eine Liste von Aktualisierungen für eine CSV-Datei basierend auf der Anfrage eines Benutzers erstellt.
 
-**DO NOT** output any text, explanation, or conversation before or after the JSON object.
-**DO NOT** wrap the JSON in markdown backticks (```json ... ```).
-
-Here is the Pydantic schema to follow:
-```json
-{Updates.model_json_schema()}
-```
-
-Now, based on the following data problem summary and user request, generate the JSON object containing the list of required updates.
-
-Problem Summary:
+Hier ist eine Zusammenfassung aller bekannten Probleme in der Datei. Diese dient nur als Kontext.
+**Zusammenfassung der Probleme:**
+---
 {summary}
+---
 
-User Request:
+Hier ist die spezifische Anfrage des Benutzers.
+**Benutzeranfrage:**
+---
 {user_message}
+---
 
-Your JSON output:
+**Deine Aufgabe:**
+Erstelle eine Liste von Aktualisierungen **AUSSCHLIESSLICH** basierend auf der Benutzeranfrage. Behebe keine anderen Probleme aus der Zusammenfassung, es sei denn, der Benutzer hat explizit danach gefragt. Wenn die Anfrage des Benutzers vage ist, führe keine Änderungen durch.
 """
-    response = llm.invoke([HumanMessage(content=prompt)])
-    content = response.content.strip()
-
+    
     try:
-        json_start = content.find('{')
-        json_end = content.rfind('}') + 1
-        if json_start == -1 or json_end == 0:
-            raise ValueError("No JSON object found in the response.")
-        
-        json_str = content[json_start:json_end]
-        updates_obj = Updates.model_validate_json(json_str)
+        structured_llm = llm.with_structured_output(Updates)
+        updates_obj = structured_llm.invoke([HumanMessage(content=prompt)])
         updates = updates_obj.updates
     except (json.JSONDecodeError, ValidationError, ValueError) as e:
         return {
-            **state,
             "messages": state["messages"] + [
                 AIMessage(content=f"❌ Die Anpassung konnte leider nicht automatisch durchgeführt werden, da die LLM-Antwort ungültig war. Fehler: {e}. Bitte prüfen und manuell anpassen.")
             ]
@@ -238,12 +277,11 @@ Your JSON output:
 
     if not updates:
         return {
-            **state,
             "messages": state["messages"] + [
-                AIMessage(content="ℹ️ Es wurden keine Änderungen vorgeschlagen. Die Daten scheinen bereits korrekt oder erfordern manuelle Prüfung.")
+                AIMessage(content="ℹ️ Es wurden keine Änderungen vorgeschlagen. Die Daten scheinen bereits korrekt zu sein oder erfordern eine manuelle Prüfung.")
             ]
         }
-
+    print(updates)
     for update in updates:
         row_idx = update.row
         column = update.column
@@ -251,16 +289,32 @@ Your JSON output:
         if column in df.columns and 0 <= row_idx < len(df):
             df.at[row_idx, column] = new_value
 
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
-    df.to_csv(temp_file.name, index=False)
+    original_path = state.get("file_path")
+    dir_name, file_name = os.path.split(original_path)
+    base_name, ext = os.path.splitext(file_name)
+    new_file_path = os.path.join(dir_name, f"{base_name}_fixed.csv")
+    
+    # Schreibe die CSV-Datei mit den korrekten Parametern, um die Konsistenz zu gewährleisten
+    df.to_csv(new_file_path, index=False, sep=";", encoding="utf-8-sig")
 
     return {
-        **state,
         "last_action": "IMPROVE",
         "messages": state["messages"] + [
-            AIMessage(content="✅ Verbesserungen angewendet und neue Datei gespeichert.")
+            AIMessage(content=f"✅ Verbesserungen angewendet und neue Datei gespeichert unter: {new_file_path}")
         ],
-        "improved_file_path": temp_file.name
+        "improved_file_path": new_file_path,
+        "file_checked": False,
+        "__routing__": "offer_recheck"
+    }
+
+
+def offer_recheck_node(state: State):
+    """
+    Asks the user if they want to re-check the file after an update.
+    """
+    message = "Ich habe die Änderungen übernommen. Soll ich die neue Datei erneut überprüfen, um sicherzustellen, dass alle Fehler behoben sind?"
+    return {
+        "messages": state["messages"] + [AIMessage(content=message)]
     }
 
 
@@ -275,79 +329,89 @@ class RoutingDecision(BaseModel):
 
 
 def determine_next_step(state: State):
-    user_msg = state["messages"][-1].content
+    """
+    Bestimmt basierend auf der letzten Nachricht des Nutzers, ob Daten geprüft oder korrigiert werden sollen.
+    """
+    last_human_message = ""
+    for m in reversed(state["messages"]):
+        if isinstance(m, HumanMessage):
+            last_human_message = m.content
+            break
+    
+    if not last_human_message:
+        # Fallback, wenn keine menschliche Nachricht gefunden wird
+        return {"__routing__": "error"}
 
     prompt = f"""
-You are an expert JSON-generating assistant. Your sole purpose is to output a valid JSON object that conforms to the provided Pydantic schema.
+Du bist ein Router, der die Absicht eines Nutzers analysiert, um zu entscheiden, ob eine Datenprüfung oder eine Datenkorrektur erforderlich ist.
+Die Absicht des Nutzers lautet: "{last_human_message}"
 
-**DO NOT** output any text, explanation, or conversation before or after the JSON object.
-**DO NOT** wrap the JSON in markdown backticks (```json ... ```).
+- Wenn der Nutzer explizit darum bittet, etwas zu "korrigieren", "ändern", "anpassen", "fixen" oder eine ähnliche Aktion durchzuführen, die eine Modifikation impliziert, wähle 'improve_data'.
+- Für alles andere, wie z.B. eine Prüfung anzufordern, eine Datei hochzuladen oder eine allgemeine Frage zu stellen, wähle 'check_data'.
 
-Here is the Pydantic schema to follow:
-```json
-{RoutingDecision.model_json_schema()}
-```
-
-Now, based on the following user message, decide the next action.
-
-User Message:
-'{user_msg}'
-
-Your JSON output:
+Basierend auf dieser Anweisung, was ist die nächste Aktion?
 """
-    response = llm.invoke([HumanMessage(content=prompt)])
-    content = response.content.strip()
-
+    structured_llm = llm.with_structured_output(RoutingDecision)
     try:
-        json_start = content.find('{')
-        json_end = content.rfind('}') + 1
-        if json_start == -1 or json_end == 0:
-            raise ValueError("No JSON object found in the response.")
-            
-        json_str = content[json_start:json_end]
-        decision_obj = RoutingDecision.model_validate_json(json_str)
-        decision = decision_obj.next_action.value
-    except (json.JSONDecodeError, ValidationError, ValueError) as e:
-        return {
-            **state,
-            "messages": state["messages"] + [AIMessage(content=f"❌ Konnte die nächste Aktion nicht bestimmen. Fehler: {e}")],
-            "__routing__": "error"
-        }
-
-    return {
-        **state,
-        "messages": state["messages"] + [AIMessage(content=f"➡ Nächste Aktion: {decision.upper()}")],
-        "__routing__": decision
-    }
+        decision = structured_llm.invoke([HumanMessage(content=prompt)])
+        if decision.next_action == NextAction.IMPROVE_DATA:
+            return {"__routing__": "improve_data", "user_message": last_human_message}
+        else:
+            return {"__routing__": "check_data", "user_message": last_human_message}
+    except Exception as e:
+        # Bei einem Fehler eine Standardaktion oder Fehlerbehandlung durchführen
+        return {"__routing__": "error", "user_message": f"Fehler bei der Entscheidungsfindung: {e}"}
 
 
 def create_validation_graph():
-    sub = StateGraph(State)
+    """
+    Erstellt den Graphen für den Datenvalidierungs-Workflow.
+    """
+    workflow = StateGraph(State)
 
-    # Klar benannte Knoten
-    sub.add_node("Check Data", check_data_node)
-    sub.add_node("Generate Response", response_generation)
-    sub.add_node("Determine Next Step", determine_next_step)
-    sub.add_node("Improve Data", apply_updates_node)
+    # Knoten definieren
+    workflow.add_node("determine_next_step", determine_next_step)
+    workflow.add_node("check_data_node", check_data_node)
+    workflow.add_node("response_generation_node", response_generation_node)
+    workflow.add_node("apply_updates_node", apply_updates_node)
+    workflow.add_node("offer_recheck_node", offer_recheck_node)
 
-    # Ablauf definieren
-    sub.add_edge("Check Data", "Generate Response")
-    
-    sub.add_conditional_edges(
-        "Determine Next Step",
-        lambda s: s.get("__routing__"),
+    # Einstiegspunkt festlegen
+    workflow.set_entry_point("determine_next_step")
+
+    # Kanten basierend auf der Logik definieren
+    workflow.add_conditional_edges(
+        "determine_next_step",
+        lambda x: x.get("__routing__"),
         {
-            "Check Data": "Check Data",
-            "Improve Data": "Improve Data"
+            "check_data": "check_data_node",
+            "improve_data": "apply_updates_node",
+            "error": END
         }
     )
 
-    sub.add_edge("Improve Data", "Generate Response")
-
-    # Einstiegspunkt
-    sub.set_entry_point("Determine Next Step")
-
-    return sub.compile()
+    workflow.add_conditional_edges(
+        "check_data_node",
+        lambda x: x.get("__routing__"),
+        {
+            "generate_response": "response_generation_node",
+            "end": END,
+        }
+    )
+    
+    workflow.add_conditional_edges(
+        "apply_updates_node",
+        lambda x: x.get("__routing__"),
+        {
+            "offer_recheck": "offer_recheck_node",
+            "end": END,
+        }
+    )
+    
+    workflow.add_edge("response_generation_node", END)
+    workflow.add_edge("offer_recheck_node", END)
+    
+    return workflow.compile()
 
 
 

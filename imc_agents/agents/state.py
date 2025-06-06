@@ -11,6 +11,7 @@ class State(TypedDict):
     # 🏷 Supervising-Level
     task_type: Optional[str]  # z. B. 'onboarding', 'validation', 'smalltalk', vom Supervisor entschieden
     has_greeted: Optional[bool]  # ob schon ein Begrüßungstext geschickt wurde
+    next_route: Optional[str] # For supervisor routing
 
     # 📄 Dateiverwaltung
     file_path: Optional[str]  # Pfad zur aktuellen Originaldatei (vom User hochgeladen)
@@ -18,6 +19,8 @@ class State(TypedDict):
 
     # 🗂 Check- und Verbesserungsergebnisse
     check_results: Optional[Dict[str, Any]]  # Ergebnisse aus Datenprüfungen (z. B. Fehlerlisten)
+    technical_summary: Optional[str] # Technical summary from a data check
+    file_checked: Optional[bool] # Flag to indicate if the file has been checked
     corrections_applied: Optional[bool]  # Flag, ob bereits Korrekturen angewendet wurden
 
     # 💬 Nutzerkontext
@@ -32,6 +35,7 @@ class State(TypedDict):
     context: Optional[str]  # zusammengefasster Gesprächskontext (z. B. letzte 10 Messages)
     generation: Optional[str]  # RAG-generierte Rohantwort
     documents: Optional[List[str]]  # von RAG zurückgegebene Dokumentinhalte
+    draft_response: Optional[str]
 
     restored_from_db: bool
     context: str

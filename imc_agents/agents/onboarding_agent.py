@@ -3,12 +3,7 @@ from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from imc_agents.agents.state import State
 from imc_agents.costum_llm_model import CustomChatModel
 from langchain_community.vectorstores.neo4j_vector import Neo4jVector
-from langchain.chains.retrieval_qa.base import RetrievalQA
 from imc_agents.costum_embeddings_model import CustomEmbeddingModel
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
-from langchain.chains.combine_documents.stuff import StuffDocumentsChain   
-from langchain.schema.runnable import RunnableMap
 from dotenv import load_dotenv
 import os
 
@@ -28,188 +23,162 @@ vectorstore = Neo4jVector.from_existing_index(
     url=NEO4J_URL,
     username=NEO4J_USERNAME,
     password=NEO4J_PASSWORD,
-    index_type="NODE",
-    index_name="subsubsection_vector_index",
+    index_name="subsubsection_vector_index", 
     node_label="Subsubsection",
     text_node_property="text",
     embedding_node_property="embedding"
 )
 retriever = vectorstore.as_retriever()
 
-prompt = PromptTemplate.from_template(
-    "Beantworte die Frage basierend auf dem folgenden Kontext:\n\n{context}\n\nFrage: {question}"
-)
-
-llm_chain = LLMChain(llm=llm, prompt=prompt)
-
-rag_chain = RunnableMap(
-    {
-        "context": lambda x: retriever.invoke(x["question"]),
-        "question": lambda x: x["question"],
-    }
-) | llm_chain
-
 # === Node-Funktionen ===
-def extract_context(state: State, history_limit: int = 10):
-    recent_msgs = state["messages"][-history_limit:]
-    context = "\n".join(
-        [f"Nutzer: {m.content}" if m.type == "human" else f"Agent: {m.content}" for m in recent_msgs]
-    )
-    return {**state, "context": context, "messages": state["messages"] + [AIMessage(content="Kontext extrahiert.")]}
 
+def decide_if_rag_is_needed(state: State):
+    """
+    Analyzes the user's question to decide if a knowledge base lookup is necessary.
+    """
+    last_human_message = ""
+    for m in reversed(state["messages"]):
+        if isinstance(m, HumanMessage):
+            last_human_message = m.content
+            break
+    
+    if not last_human_message:
+        return {"__routing__": "end"}
 
-def decide_need_for_rag(state: State):
-    # Wenn keine Dokumente da, sofort zu RAG springen
-    if not state.get("documents"):
-        routing = "run_rag"
-        decision = "KEINE DOKUMENTE → RAG ERZWUNGEN"
+    prompt = f"""
+Du bist ein Router, der entscheidet, ob für eine Benutzeranfrage eine technische Suche in einer Wissensdatenbank erforderlich ist.
+
+Die Wissensdatenbank enthält spezifische technische Details zu:
+- Datenübertragungsmethoden: SFTP, API, IDoc
+- Datenformate: CSV, EDIFACT
+- Spezifische Fehlermeldungen oder technische Anforderungen.
+
+Analysiere die folgende Benutzerfrage.
+
+**Benutzerfrage:** "{last_human_message}"
+
+Erfordert diese Frage wahrscheinlich eine Suche nach spezifischen technischen Details in der Wissensdatenbank?
+Antworte nur mit 'JA' für technische Fragen oder 'NEIN' für allgemeine oder gesprächsbezogene Fragen.
+"""
+    decision = llm.invoke([SystemMessage(content=prompt)]).content.strip().upper()
+
+    if "JA" in decision:
+        return {"__routing__": "run_rag", "user_message": last_human_message}
     else:
-        prompt = (
-            f"Hier ist der aktuelle Kontext:\n{state['context']}\n\n"
-            "Brauche ich zusätzliche Dokumente aus der Wissensbasis, um sinnvoll zu antworten? "
-            "Antworte nur mit 'JA' oder 'NEIN'."
-        )
-        decision = llm.invoke([AIMessage(content=prompt)]).content.strip().upper()
-        routing = "run_rag" if decision == "JA" else "generate_structured_draft"
+        return {"__routing__": "generate_simple_response", "user_message": last_human_message}
 
-    return {
-        **state,
-        "messages": state["messages"] + [AIMessage(content=f"RAG-Entscheidung: {decision}")],
-        "__routing__": routing
-    }
-
-
-async def run_rag(state: State):
-    query = state["context"]
-
-    # 1. Dokumente manuell vom Retriever holen (für Zugriff auf Inhalte/Quellen)
-    docs = await retriever.ainvoke(query)
-    context = "\n\n".join(doc.page_content for doc in docs)
-
-    # 2. LLM aufrufen
-    result = await llm_chain.ainvoke({
-        "context": context,
-        "question": query,
-    })
-
-    return {
-        **state,
-        "generation": result["text"],
-        "documents": [doc.page_content for doc in docs],
-        "messages": state["messages"] + [
-            AIMessage(content="Neue RAG-Dokumente geholt.")
-        ],
-    }
-
-def generate_structured_draft(state: State):
+def generate_simple_response(state: State):
+    """
+    Generates a direct, conversational response for non-technical questions.
+    """
     system_prompt = """
-You are a technical writer. Your task is to synthesize information from a knowledge base to answer a user's query.
-- Extract all relevant facts, details, and steps from the provided documents.
-- Structure the information clearly with headings and lists.
-- Do not add any conversational fluff, greetings, or sign-offs.
-- Your output will be used by another AI to formulate a natural-sounding response.
+Du bist ein freundlicher und professioneller Onboarding-Berater für Siemens.
+Gib eine hilfreiche, gesprächsbezogene und prägnante Antwort auf die Frage des Nutzers.
+Formatiere die Antwort ansprechend mit Absätzen, aber verwende **keinerlei Markdown** (keine Listen, kein Fettdruck etc.).
+Die Antwort muss auf Deutsch und in reinem Text sein.
 """
+    human_prompt = f"Benutzerfrage: {state['user_message']}"
+    response_text = llm.invoke([SystemMessage(content=system_prompt), HumanMessage(content=human_prompt)]).content
 
-    human_prompt = f"""
-Gesprächsverlauf:
-{state['context']}
+    if not state.get("has_greeted"):
+        greeting = "Hallo, gerne unterstütze ich euch bei der Anbindung an das Siemens-System."
+        response_text = f"{greeting}\n\n{response_text}"
 
-Wissensdatenbank:
+    return {"messages": [AIMessage(content=response_text)], "has_greeted": True}
+
+
+def run_rag(state: State):
+    docs = retriever.invoke(state['user_message'])
+    return {"documents": [doc.page_content for doc in docs], "user_message": state['user_message']}
+
+def decide_if_rag_is_sufficient(state: State):
+    if not state.get("documents"):
+        return {"__routing__": "ask_clarifying_questions"}
+
+    prompt = f"""
+Du bist ein Router, der Entscheidungen trifft. Basierend auf der Frage des Nutzers und den abgerufenen Dokumenten, entscheide, ob du genügend spezifische Informationen hast, um eine maßgeschneiderte Empfehlung zu geben.
+
+**Benutzerfrage:** "{state['user_message']}"
+**Abgerufene Dokumente:**
+---
 {state['documents']}
-
-Basierend auf dem Gesprächsverlauf und den Fakten aus der Wissensdatenbank, erstelle einen strukturierten, faktenbasierten Entwurf.
+---
+Kannst du eine spezifische, umsetzbare Empfehlung geben, die nur auf diesen Informationen basiert?
+Antworte mit 'AUSREICHEND' oder 'UNZUREICHEND'.
 """
+    decision = llm.invoke([SystemMessage(content=prompt)]).content.strip().upper()
 
-    draft_response = llm.invoke([
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=human_prompt)
-    ])
-
-    return {
-        **state,
-        "draft_response": draft_response.content,
-        "messages": state["messages"] + [AIMessage(content="Technischer Entwurf erstellt.")]
-    }
+    if "AUSREICHEND" in decision:
+        return {"__routing__": "generate_tailored_recommendation"}
+    else:
+        return {"__routing__": "ask_clarifying_questions"}
 
 
-def rephrase_for_naturalness(state: State):
+def generate_tailored_recommendation(state: State):
     system_prompt = """
-Du bist ein erstklassiger Onboarding-Berater von Siemens. Deine Aufgabe ist es, einen technischen Entwurf in eine natürliche, hilfreiche und handlungsorientierte Konversation zu übersetzen.
+Du bist ein erstklassiger Onboarding-Berater für Siemens. Deine Aufgabe ist es, eine prägnante, leicht verständliche Zusammenfassung zu erstellen, um ein Gespräch mit dem Nutzer zu beginnen.
 
-**Deine Persönlichkeit & Stil:**
-- **Kompetenter Berater:** Du sprichst wie ein erfahrener Kollege, nicht wie eine Maschine. Du nimmst die Informationen des Nutzers (z.B. "wir nutzen ein ERP-System, das CSV exportiert") und verbindest sie direkt mit den Lösungen aus dem technischen Entwurf.
-- **Klar und Strukturiert:** Du gliederst komplexe Informationen in einfache, nummerierte Schritte. Du nutzt Markdown (insbesondere **fettgedruckten Text** und Listen), um die Lesbarkeit zu verbessern.
-- **Proaktiv und Lösungsorientiert:** Dein Ziel ist es nicht nur, Fragen zu beantworten, sondern dem Nutzer einen klaren Weg aufzuzeigen. Biete am Ende immer proaktiv weitere Hilfe an.
-
-**Deine Anweisungen:**
-1.  **Formuliere um:** Wandle den folgenden `Technischen Entwurf` in eine persönliche, dialogorientierte Antwort um.
-2.  **Kontext nutzen:** Berücksichtige den `Gesprächsverlauf`, um nahtlos an die letzte Nutzeranfrage anzuknüpfen.
-3.  **Keine Verabschiedung:** Beende deine Nachricht nicht mit einer Grußformel, es sei denn, der Nutzer verabschiedet sich explizit.
-
-**Beispiel für eine exzellente Antwort:**
-<beispiel>
-Ihr ERP-System ermöglicht den Export in CSV-Format, was perfekt für die SFTP-Option zur Datenübermittlung an Siemens passt. Hier sind einige konkrete Schritte, die Sie unternehmen können, um diese Schnittstelle aufzubauen:
-
-1. **SFTP Verbindung einrichten:**
-   - Beginnen Sie, indem Sie sich bei Ihrem Siemens Point of Sales Data Steward melden, um die spezifischen Zugangsdaten (Benutzername und private Schlüsseldatei) zu erhalten.
-   ...
-Ich stehe Ihnen für weitere Fragen oder für Unterstützung bei der Implementierung gerne zur Verfügung.
-</beispiel>
+**Anweisungen:**
+- Überprüfe die Frage des Nutzers und die abgerufenen Dokumente aus der Wissensdatenbank.
+- Fasse die wichtigsten Optionen oder den wichtigsten Ausgangspunkt kurz zusammen. **Liste nicht alle technischen Details auf.**
+- Dein Ziel ist es, eine verdauliche und prägnante Menge an Informationen zu liefern und dann einen nächsten Schritt vorzuschlagen oder eine Frage zu stellen.
+- Die gesamte Antwort muss auf **Deutsch** sein.
+- Formatiere die Antwort ansprechend mit Absätzen, aber verwende **keinerlei Markdown** (keine Listen, kein Fettdruck etc.). Die Ausgabe muss reiner Text sein.
 """
 
-    human_prompt = f"""
-Gesprächsverlauf:
-{state['context']}
+    human_prompt = f"Benutzerfrage: {state['user_message']}\n\nDokumente aus der Wissensdatenbank:\n{state['documents']}\n\nGib basierend auf diesen Dokumenten eine prägnante Zusammenfassung, um dem Nutzer den Einstieg zu erleichtern."
+    response_text = llm.invoke([SystemMessage(content=system_prompt), HumanMessage(content=human_prompt)]).content
 
-Technischer Entwurf:
-{state['draft_response']}
+    if not state.get("has_greeted"):
+        greeting = "Hallo, gerne unterstütze ich euch bei der Anbindung an das Siemens-System."
+        response_text = f"{greeting}\n\n{response_text}"
 
-Basierend auf dem Gesprächsverlauf und dem technischen Entwurf, formuliere nun eine finale, natürliche Antwort für den Nutzer im Stil des oben genannten Beispiels.
-"""
+    return {"messages": [AIMessage(content=response_text)], "has_greeted": True}
 
-    final_response = llm.invoke([
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=human_prompt)
-    ])
 
+def ask_clarifying_questions(state: State):
+    question = "Damit wir gemeinsam den passenden Weg finden, könnt ihr mir kurz beschreiben, wie euer IT-Setup aussieht und ob ihr bereits Erfahrung mit elektronischen Datentransfers habt?"
+
+    if not state.get("has_greeted"):
+        greeting = "Hallo, gerne unterstütze ich euch bei der Anbindung an das Siemens-System."
+        full_message = f"{greeting} {question}"
+    else:
+        full_message = question
+
+    # Ensure the output is a plain AIMessage
     return {
-        **state,
-        "messages": state["messages"] + [final_response]
+        "messages": [AIMessage(content=full_message)],
+        "has_greeted": True,
     }
 
 
 # === Graph-Bau ===
-
 def create_onboarding_graph():
     sub = StateGraph(State)
 
-    # Klar verständliche Namen statt technischer Funktionsnamen
-    sub.add_node("Extract Context", extract_context)
-    sub.add_node("Decide Need For RAG", decide_need_for_rag)
+    sub.add_node("Decide if RAG is Needed", decide_if_rag_is_needed)
+    sub.add_node("Generate Simple Response", generate_simple_response)
     sub.add_node("Run RAG", run_rag)
-    sub.add_node("Generate Structured Draft", generate_structured_draft)
-    sub.add_node("Rephrase For Naturalness", rephrase_for_naturalness)
+    sub.add_node("Decide if RAG is Sufficient", decide_if_rag_is_sufficient)
+    sub.add_node("Generate Tailored Recommendation", generate_tailored_recommendation)
+    sub.add_node("Ask Clarifying Questions", ask_clarifying_questions)
 
-    # Startknoten
-    sub.add_edge(START, "Extract Context")
-
-    # Ablaufkanten
-    sub.add_edge("Extract Context", "Decide Need For RAG")
-
+    sub.add_edge(START, "Decide if RAG is Needed")
     sub.add_conditional_edges(
-        "Decide Need For RAG",
-        lambda s: "Run RAG" if s.get("__routing__") == "run_rag" else "Generate Structured Draft",
-        {
-            "Run RAG": "Run RAG",
-            "Generate Structured Draft": "Generate Structured Draft"
-        }
+        "Decide if RAG is Needed",
+        lambda s: s.get("__routing__"),
+        {"run_rag": "Run RAG", "generate_simple_response": "Generate Simple Response"}
     )
-
-    sub.add_edge("Run RAG", "Generate Structured Draft")
-    sub.add_edge("Generate Structured Draft", "Rephrase For Naturalness")
-    sub.add_edge("Rephrase For Naturalness", END)
-
-    # Einstiegspunkt für den Graph
-    sub.set_entry_point("Extract Context")
+    sub.add_edge("Generate Simple Response", END)
+    
+    sub.add_edge("Run RAG", "Decide if RAG is Sufficient")
+    sub.add_conditional_edges(
+        "Decide if RAG is Sufficient",
+        lambda s: s.get("__routing__"),
+        {"generate_tailored_recommendation": "Generate Tailored Recommendation", "ask_clarifying_questions": "Ask Clarifying Questions"}
+    )
+    
+    sub.add_edge("Generate Tailored Recommendation", END)
+    sub.add_edge("Ask Clarifying Questions", END)
 
     return sub.compile()
