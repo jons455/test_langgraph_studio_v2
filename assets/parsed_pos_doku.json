@@ -1,0 +1,812 @@
+{
+  "nodes": [
+    {
+      "id": "1_0",
+      "title": "Welcome to the Siemens PoS Portal",
+      "text": "Welcome to the documentation page for our Point of Sales (PoS) portal! In this documentation part of the application, you will find everything you need to know about our PoS portal, from its features and functionalities to the step-by-step guides on sending PoS information to Siemens.\nTo get started simply select the chapter you're looking for, you can also then jump to the appropriate subchapter. Should you not find the content you're looking for, please reach out to your local Siemens PoS Data Steward.",
+      "type": "section"
+    },
+    {
+      "id": "1_1",
+      "title": "API Technical Documentation",
+      "text": "",
+      "type": "section"
+    },
+    {
+      "id": "2_2",
+      "title": "Technical Overview",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_3",
+      "title": "Endpoints",
+      "text": "An endpoint refers to a specific location or address and is the point at which the API can be accessed specifically by your organisation. Endpoints in this case are used to send Siemens the point of sales information using the development and production endpoints listed below\nhttps://api.pos.siemens.com/prd/\nhttps://api.pos.siemens.com/qua/\nEXAMPLE: To send point of sales during development you would use https://api.pos.siemens.com/qua/create_record",
+      "type": "subsection"
+    },
+    {
+      "id": "3_4",
+      "title": "Methods",
+      "text": "[POST] (This is the type of request)\nCREATE RECORD\nHave a look at the example screenshot below, taken from the application 'Postman' for development purposes. Note that the request is using POST and sending to the Endpoint with value /create_record",
+      "type": "subsection"
+    },
+    {
+      "id": "3_5",
+      "title": "REQUIRED HEADERS",
+      "text": "- X-API-KEY Followed by your CREDENTIAL\nTake a look below at the screenshot in Postman showing the key as x-api-key and the value as the credential. In this example the key has been hidden.\n- CONTENT-TYPE: application/json\nEnsure that the content-type is sent to application/json. This is managed in different ways depending on how the API is configured. In postman for example (which is ideal for initial API testing), you can see that there is no need to store this value in the header as it can be selected in a menu shown in the screenshot below.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_6",
+      "title": "QUERY PARAMETERS:",
+      "text": "This method doesn’t support any query parameters.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_7",
+      "title": "BODY",
+      "text": "The body of the API should be in json format. In the table below are the valid column names/keys acceptable for the API.If the API request body doesn’t contain the keys required, it will result in an error response.\nNOTE: All date fields should follow the ISO 8601 format. ISO 8601 tackles this uncertainty by setting out an internationally agreed way to represent the dates: YYYY-MM-DD. Therefore, the order of the elements used to express date and time in ISO 8601 is as follows: year, month, day, hour, minutes, seconds, and milliseconds.\nRecommendation is not to exceed 3000 transactions in one batch for the API.\nYou can scroll horizontal to see wider content.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_8",
+      "title": "Responses",
+      "text": "Here are the typical responses you'll receive upon calling the API\nA successful response will return the values you sent in the POST request. This will include every line of PoS you have sent.\nAn error would return a response indicating what mandatory value is missing. For example if you didn't include your sender ID with each transaction, you'd receive the following error.\nYou can scroll horizontal to see wider content.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_9",
+      "title": "Remarks",
+      "text": "You'll require the following:\nx-api-key: The x-api-key header is required which is unique to each of the endpoints. This is be granted by the Siemens PoS team.\ncontent-type: This content-type header specifies the type of document that is present in the body. For json, the valid argument is application/json.\nThe POST request is used to insert resources and thus the API expects the request to have all the necessary fields to insert the resource. If the request is missing any required fields, the API will return an 4XX status code, indicating that the request is malformed and cannot be fulfilled. Additionally, if you are using an invalid or expired API key or token, the API will also return an error 4XX, indicating that you are unauthorised to make the request.\nNOTE: If you don't see the example API request in the following chapter, you'll require elevated user permissions. Please check with your companies Siemens Data Admin. A template containing all fields is also available from your regional Siemens Data Steward.\nYou can scroll horizontal to see wider content.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_10",
+      "title": "Summary",
+      "text": "Thank you for taking the time to read through our API documentation. We hope it has provided you with all the information you need to successfully interact with our API and send your point of sales data.\nIf you have any further questions or concerns, please do not hesitate to your Siemens business contact for assistance. We also greatly value your feedback.",
+      "type": "subsection"
+    },
+    {
+      "id": "1_11",
+      "title": "SFTP Technical Documentation",
+      "text": "You can scroll horizontal to see wider content.",
+      "type": "section"
+    },
+    {
+      "id": "2_12",
+      "title": "Introduction",
+      "text": "The Secure File Transfer Protocol (SFTP) is a secure method for transferring files, such as the Point of Sales (PoS) data which includes information about sales transactions and customer information. This document is instructions on how to set up and use SFTP to share PoS data with Siemens.\nBy following this guide along with the information you received during your onboarding with your local Siemens contact which contains your unique credentials, you’ll be able to send Siemens POS data securely and efficiently.\nPlease note that you can also utilize our API to send POS which may be your organizations preferred option. If this is the case, please do inform your onboarding contact at Siemens.\nYou can scroll horizontal to see wider content.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_13",
+      "title": "Step by step - Technical setup",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_14",
+      "title": "Endpoint and Authentication",
+      "text": "Company specific credentials will be provided separately by the Siemens Point of Sales team, upon request by a Data Steward, and include a user name and a private key file.\nSFTP host name:  sftp-public.dl2go.siemens.cloud\nPort number:  22\nSee the example setup below:\nInstead of providing a password in the mask shown above please do the following:\nEdit à advanced à authentication\nSave key file and add it on the location in the print",
+      "type": "subsection"
+    },
+    {
+      "id": "3_15",
+      "title": "Transfer Settings",
+      "text": "Please make sure that the timestamp option is disabled:\nOptions à Preferences à Transfer\nClick edit on Default\nMake sure Preserve Timestamp is Disabled",
+      "type": "subsection"
+    },
+    {
+      "id": "3_16",
+      "title": "Folder Structure",
+      "text": "Folder:  inbound where you should submit your file\nFolder:  error where you will see the error logs if any\nFolder:  processed your file will be shown here if it is successfully processed\nThe first time you log in you will see only the inbound folder.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_17",
+      "title": "File Format",
+      "text": "The data file should be shared in a CSV UTF-8 (comma delimited) format and encoding. This ensures that the data can be properly read by Siemens as a comma delimited CSV file is a widely supported format and UTF-8 is a commonly used character encoding. The data is comma delimited, meaning that each field or column of data is separated by a comma making it easy to read and parse the data.\nNote: Please be mindful that contents itself, such as a street address, does not include a comma. If it does, this will cause an error with the processing of the data. When a cell contains a comma, the entire cell value should be enclosed in double quotes to indicate that the comma is part of the cell contents and not a separator between fields. However, please ensure that there are no double quotes around fields that contain numbers (fields with data type number in the input file documentation), or those will be interpreted as text. There should be a dedicated column for each field in the data set. Each file must start with a header row containing the exact same technical field names that were provided by Siemens. Because the data file is processed based on the technical field names in the header, the columns can be organized in any particular order.\nNote: At least some versions of Microsoft Excel, when saving .csv files to UTF-8 (comma delimited) format, will automatically include a Byte Order Mark (BOM). This will cause a problem when the data is uploaded, leading to an error message, that the column header for the first column (typically distributor_sender_ID) is missing and that there is an extra column starting with '\\uffef' (which is the BOM). This can be solved by opening the file in an editor (Windows notepad will do) and, without editing it in any way, saving it as .csv in UTF-8 format without BOM.\nYou can scroll horizontal to see wider content.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_18",
+      "title": "Software Requirements",
+      "text": "You are the partner, are responsible for evaluating and selecting the appropriate SFTP (Secure File Transfer Protocol) software for your organisation. A popular option that they may want to consider is WinSCP, a free and open-source SFTP and FTP client for Microsoft Windows. It can be downloaded from the official website at https://winscp.net/.\nThis software is known for its user-friendly interface, robust features and reliability. It also supports a variety of protocols including SFTP, which allows for easy and secure file transfer between you and Siemens.\nYou can scroll horizontal to see wider content.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_19",
+      "title": "Technical Instructions",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_20",
+      "title": "Authentication",
+      "text": "A file containing the private keypair credentials, specifically for use with the SFTP (Secure File Transfer Protocol), will be provided by Siemens.\nThese credentials are essential for secure file transfer and will include a private key and a public key. The private key, which is kept confidential, is used for decrypting data and authenticating the user.\nThe public key, on the other hand, is used for encrypting data and verifying the authenticity of the user (you as the partner). These keys are used together in a process called Public Key Infrastructure (PKI) to secure the SFTP connection and ensure that only authorised parties can access the files being transferred. Siemens will provide the file with these credentials, which will allow the user to securely transfer files using SFTP.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_21",
+      "title": "Contents",
+      "text": "The file that you send should be in CSV (Comma Separated Values) format, which is a widely used and simple file format for storing data in a tabular form, where each row represents a record and each column represents a field within that record.\nYou can also find a file below that provides the field descriptions, example values, and purpose.\nThis additional file will help to understand the structure of the CSV file and the information that it contains. The field descriptions provide a brief explanation of what each column in the CSV file represents and the purpose of collecting the information.\nPlease note that you'll only see the input file examples if you have the correct user permissions. Should you require the example file and don't have the necessary permissions, please contact your Siemens PoS Data Steward.\nYou can scroll horizontal to see wider content.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_22",
+      "title": "Processed and Error Notifications",
+      "text": "The incoming CSV file should be saved in the folder titled \"inbound\".  After reviewing the validations, the files will be added to the \"processed\" and \"errors\" folders respectively.\nYou can scroll horizontal to see wider content.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_23",
+      "title": "Summary",
+      "text": "Thank you for taking the time to read through our SFTP documentation. We hope it has provided you with all the information you need to successfully send your point of sales data.",
+      "type": "subsection"
+    },
+    {
+      "id": "1_24",
+      "title": "File Format/Validations",
+      "text": "",
+      "type": "section"
+    },
+    {
+      "id": "1_25",
+      "title": "AWS Setup - Data Integration",
+      "text": "Point of Sales Architecture comprises 2 entrypoints:\nAn SFTP which is managed by Siemens Central Team\nA developed API to receive datafrom the users.\nAPI Logs (Cloudwatch) are collected in almost real-time and written through a stream (kinesis) back into the storage (s3).\nPoint of sales also created 2 outbound functions that interact with external systems. These functions represent snowflake external functions\nPOS API\nAll new customers must receive an API_KEY that must be requested to the Operations Team\nThese keys must be unique and we should only give one key per user.",
+      "type": "section"
+    },
+    {
+      "id": "2_26",
+      "title": "Resources:",
+      "text": "Lambda:\npos-api-pos-api-CreateRecord\nAPI-Gateway:\npos-api\nSFTP\nThe SFTP is managed by an external team. However, we are responsible for creating the interfaces (folders) in the storage.\nWe currently support 3 interfaces\nPOS SFTP - The default\nPOS SFTP for Sell In Sell Out topics - Which save more aggregated data\nPOS SFTP for Sell In Sell Out topics for CN - Similar to the one before but designed for CN.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_27",
+      "title": "Resources:",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_28",
+      "title": "Lambda:",
+      "text": "pos-header-validation\npos-csv-validation\npos-header-validation-siso\npos-csv-validation-siso\npos-header-validation-siso-cn\npos-csv-validation-siso-cn\npos-xlsx-to-csv (used for sell-in sell-out file conversion to csv)\npos-sftp-copy\nExternal functions:",
+      "type": "subsection"
+    },
+    {
+      "id": "3_29",
+      "title": "Lambda:",
+      "text": "pos-cmd-integration-cmdGet\npos-cmd-integration-cmdSet\npos-cmd-integration-cdqPost\npos-cmd-integration-dnbGetCleansedMatch\npos-cmd-integration-dnbGetExtendedMatch\npos-cmd-integration-dnbGetToken",
+      "type": "subsection"
+    },
+    {
+      "id": "3_30",
+      "title": "API:",
+      "text": "pos-cmd-integration",
+      "type": "subsection"
+    },
+    {
+      "id": "2_31",
+      "title": "General resources",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_32",
+      "title": "Lambda:",
+      "text": "pos-CW-Firehose-transformation (for stream transformation)",
+      "type": "subsection"
+    },
+    {
+      "id": "3_33",
+      "title": "Streams:",
+      "text": "CloudWatch-S3-APIGateway - Consumes errors when requests are invalid\nCloudWatch-S3-API - Contains the logs and payload of successfull requests\nCloudWatch-S3-SFTP - Contains the logs of the SFTP events",
+      "type": "subsection"
+    },
+    {
+      "id": "3_34",
+      "title": "Storage:",
+      "text": "pos-inbound",
+      "type": "subsection"
+    },
+    {
+      "id": "3_35",
+      "title": "Logs:",
+      "text": "Associated cloudwatch logs for each resource",
+      "type": "subsection"
+    },
+    {
+      "id": "2_36",
+      "title": "Validations",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "2_37",
+      "title": "Rules",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_38",
+      "title": "API",
+      "text": "The payload must be under 6MB (API Gateway and Lambda payload limits)\nAll users must be given an API Key\nCan send multiple distributor_sender_id per file",
+      "type": "subsection"
+    },
+    {
+      "id": "3_39",
+      "title": "SFTP",
+      "text": "10.000 Records per file\nAn SFTP user must be requested for each sender\nCan only send one distributor_sender_id per file\nAll files must be .csv with utf-8 encoding\nIn SFTP we also have an interface for EDI (US) which works the same way as the general SFTP",
+      "type": "subsection"
+    },
+    {
+      "id": "2_40",
+      "title": "Process",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_41",
+      "title": "API",
+      "text": "The user makes a POST request\nA pre-validation of the schema is made before the function execution (If validation fails the payload will return the error)\nThe function executes and writes the file to s3",
+      "type": "subsection"
+    },
+    {
+      "id": "3_42",
+      "title": "SFTP",
+      "text": "A File must be placed inside the inboud folder they have access\nThe file is picked up by the \"creation\" event inside the s3 bucket.\nThe header validation lambda is executed.\nIf all mandatory fields are present, the lambda will write a temporary file with the ordered headers; Otherwise will return an error and move the original file to the error folder and attatch an error file with the errors.\nThe temporary file is picked up by the content validation lambda. If there are errors in the content the file will be moved to the error folder and attatch an error file with the validation errors.\nIf no errors are found, the file will move to the processed folder. And a copy renamed with a timestamp will also place a file in the staging folder for Snowflake consumption",
+      "type": "subsection"
+    },
+    {
+      "id": "1_43",
+      "title": "CMD (Corporate Master Data)",
+      "text": "",
+      "type": "section"
+    },
+    {
+      "id": "2_44",
+      "title": "GB:",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_45",
+      "title": "Quality Rules for Business Partner Master Data",
+      "text": "Document version: RELEASED\nLast review date: 21 August 2024",
+      "type": "subsection"
+    },
+    {
+      "id": "3_46",
+      "title": "Purpose of this document",
+      "text": "This document outlines binding rules for all Business Partners and their addresses residing in Great Britain and Northern Ireland. These local rules supplement the base document 'Global Rules Alignment' which explains global scope and applicability as well as generally applicable handling and maintenance instructions.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_47",
+      "title": "Global Rules",
+      "text": "The aim of these country specific rules is to standardise the maintenance procedures of the below outlined attributes of Business Partner, Vendor and Customer Master Data and others ensuring high quality Master Data.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_48",
+      "title": "Scope",
+      "text": "This document is valid Siemens-wide for CMD addresses with the country code 'GB' and for all IT systems that manage business partner master data. The rules for business partners with foreign country codes are defined in the country-specific rules alignments.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_49",
+      "title": "​​Applicability",
+      "text": "These rules are applicable to all businesses and their systems regardless of their own business location except local legal requirements advise differently. Exceptions must be documented in the respective Rules Alignment document.\nThe rules are binding independently of the type of the consumer system, e.g. SAP solutions, non-SAP. This includes different SAP versions, i.e. R/3 and S/4 HANA based systems.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_50",
+      "title": "System specifics",
+      "text": "The current Corporate Master Data supplies various target systems. The S/4HANA based systems contain an improved Business Partner Master Data Model which allows central governance, maintenance and distribution over additional data attributes. The improved setup with SAP MDG  allows a centralised maintenance for most business partner master data which supports consistency of these data in all systems (please refer to system section in General Rules Alignment Section for details). Local data maintenance will not be allowed in local systems except otherwise specified.\nThese additional attributes will be added to the Rule Alignment documents as required and aligned.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_51",
+      "title": "Quality Rules for Business Partner Master Data",
+      "text": "Overview:\nDetailed Rules:\nCountry Code\nThe country code for Great Britain and Northern Ireland is the ISO 3166-1- alpha-2-Code GB.\nLanguage\nNational language is English.\nInternational Address Versions\nNational spelling according to trade register is stored in default version. Transliterated or translated version is stored in the international address version.\nCase Sensitivity\nAddresses for Business Partners customers and suppliers with the country code \"GB\" will be stored in the following way:\nNames should be written as represented in the respective register of companies, cooperatives, associations or partnerships (https://find-and-update.company-information.service.gov.uk/).\nLegal forms have to be abbreviated or written out according to the table in the 'Legal Forms' chapter\nPostal information (postal code, city, street) should be written according to the rules of UK Royal Mail and outlined by the Universal Postal Union (UPU)\nUpper/ lower cases should be written according to these rules.\nSpecial characters are not used.\nAddresses for foreign customers and suppliers are to be written as defined by the respective country-specific rules alignment.\nNames\nName1 (CAP) will be exchanged with Name1 (CMD).\nName2 (CAP) will be exchanged with Name2 (CMD).\nName3 won’t be exchanged with CMD because it reflects the brand name.\nIf the name is longer than 35 characters there should be made a reasonable line break. The second part of the name is stored in Name 2.\n​​​​​​​Additional information such as organizational units, contact persons or ship-to information have to be migrated to field which is not exchanged with CMD.\nNames of business partners have to be maintained according to the official trade register. Exceptions are sole trade businesses, hospitals, schools, government, and other public institutions (See the chapter Legal form).\nThe CAP GB trades with a lot of individual persons and sole trading and partnership style businesses. The names provided by the CAP GB for these businesses do not have Ltd or Plc etc. at the end of them, which means they have no legal form.\nIt is often the case that a sole trader will have the same name as a registered legal entity, but it is not correct to assume that they are the same. Therefore, CMD must not change or suggest to change the legal form on a sole trading business following confirmation the GB CAP of the correct business name.\nPlease note that “full stops” should not be placed at the end of any legal entity names. This is not relevant for GB company names.\nAbbreviations in the name\nNames of customers and suppliers with the country code \"GB\" can be abbreviated or written out.\nLegal forms\nThe legal form for Business Partners from Great Britain and Northern Ireland is mandatory and it is part of the name according to trade register.\nGenerally legal names have to contain legal forms with the following exceptions:\njoint partnerships,\nmedical institutions, imaging centers\ngovernment agencies and institutions\nlawyers\nnon-profit organizations\neducational institutions\nsole proprietors\ntrusts, foundation\nSole Trading Businesses\nIn GB we do not use Proprietor name, therefore this is not required to be entered anywhere in GB address.\nSole trade businesses, partnerships do not have legal form\nIt is often the case that a sole trader will have the same name as a registered legal entity, but it is not correct to assume that they are the same.\nExample:\nMansion House Dental Practice        X         Mansion House Dental Practice Limited\n(sole trader)                                                    (registered company)\nHospitals\nThey are mainly operated by trusts (in case of governmental hospitals). Therefore Name 1 must include the Trust Name, Name 2 can contain a Hospital Name and it is also correct to leave it empty (if there is a NHS Trust but not a separate Hospital Name).\nExample:\nName 1 = The Royal Hospitals NHS Trust\nName 2 = Royal London Hospital\nThe Legal Forms list below might not be complete but is showing the commonly used legal forms. Standard ISO 20275 is providing a full list of available legal forms of the covered countries. If an unknown Legal Form is requested for a business partner the ISO standard can be used as a reference. Please raise a change request to get missing legal forms added.\nAbbreviation of legal forms\nLegal forms for customers and vendors can be abbreviated or written out according to the following table which contain the most used legal forms:\nGreat Britain and Northern Ireland is covered by the ISO Standard ISO standard 20275 ‘Financial Services – Entity Legal Forms (ELF)’, developed by the International Organization for Standardization. The standard was published in July 2017. Each Legal Form covered by the Standard got a so-called ELF code assigned which uniquely identifies the legal form. ​​​​​​​​​​​​​​​​​​​​​\nAddress Data\nAs a general rule postal information, e.g. postal code, city, street, should be written according to the rules of UK Royal Mail.\nStreet\n\"Street\" is a mandatory field.\nThe street can be verified in UK Royal Mail.\nThe street field is purely for street information only, but also a House name is part of the address. House name is currently not exchanged with CMD.\nNo Unit Numbers will be stored in the Street Field.\nHouse name /Industrial Estates /Business parks must only be used as the last resort when there is no alternative street information available. [This rule is currently under investigation; house names will be added soon]\nExample:\nIncorrect:        Unit 10, Queen House, Bacup Road\n​​​​​​​Rossendale BB4 7JJ\nCorrect:          Bacup Road\nRossendale BB4 7JJ\nIncorrect:       Unit 4.14 Cannock Chase Enterprise Centre\nCannock WS12 0QU\nCorrect:         Cannock Chase Enterprise Centre\nCannock WS12 0QU\nIncorrect:        Albavet Ltd Dunearn House\nBurntisland KY3 0AH\nCorrect:         Dunearn House\nBurntisland KY3 0AH\nThe following abbreviations are used only if the field is not long enough to fill the complete street information.\nCity\n\"City\" is a mandatory field.\nIt is maintained according to UK Royal Mail.\nPostal code\n\"Postal code\" is a mandatory field.\nFormat\n​​​​​​​It has between 5 and 7 alphanumeric characters with a space before the last 3 alphanumeric characters. Postal code can be verified according to UK Royal Mail.\n​​​​​​​Examples\nM2 5BQ Manchester\nFK3 8UU Grangemouth\nEC1A 1HQ London\nRegion\nThe region field is now mandatory only for Northern Ireland. Until 2016 divided into 26 (single-tier) unitary authorities, termed Districts, a reform process was implemented in April 2015 resulting in a new pattern of 11 districts.[1]\nOther regions of United Kingdom of Great Britain and Northern Ireland are currently not exchanged with CMD (For the list of the regions please see ISO Standard https://www.iso.org/obp/ui/#iso:code:3166:GB).\nTerritories and countries subdivisions\nThese GB territories and subdivisions are maintained according to the Global Rules Alignment. They have their own country codes.​​​​​​​\n​​​​​​​Jersey, Guernsey and Isle of Man have their own trade registers and posts.\nP.O. Box\nIn general P.O. Box is not exchanged. Exceptions are to be made only if no physical address exists.\nP.O. Box is maintained in P.O. Box fields.\nP.O. Box Postal Code\nThis field is used for countries where a different postal code applies to mail that is sent to the PO box rather than to the street address of a particular business partner.\nPostal codes for group major customers also have to be entered in the field for the PO box postal code since individual customers with a shared postal code for group major customers are differentiated by means of the PO box.\nCompany Postal Codes\nPostal codes for major customers (= company postal codes), however, are assigned to one customer only and have to be entered in the field 'Company Postal Code'.\nTelephone/Fax Numbers\nTelephone and fax numbers are not mandatory and currently not exchanged with CMD. If exchanged, the CAP has to ensure to send central phone numbers (switch board numbers) only.\nLondon, London, United Kingdom\n1:24 PM\nTuesday, Feb 25, 2025\nInteresting and helpful links\nPostal Information by Universal Postal Union (UPU)\nUPU Information - United Kingdom of Great Britain and Northern Ireland\nCommercial Register \nCompanies House\nOther official registers:\nMutuals Public Register\nRegister of Solicitors\nRegister of charities\nScottish Charity Regulator\nPost - UK Royal Mail \nhttps://www.royalmail.com/find-a-postcode​​​​​​​\nVIES Validation of EU VAT Number (for Northern Ireland VAT Numbers)\nhttps://ec.europa.eu/taxation_customs/vies/vatRequest.html?locale=en\nVAT verification in UK\nhttps://www.tax.service.gov.uk/check-vat-number/enter-vat-details​​​​​​​\nIsle of Man\nTrade register \nhttps://services.gov.im/ded/services/companiesregistry/companysearch.iom\nPost\nhttps://www.iompost.com/tools-forms/postcode-finder/​​​​​​​\nJersey\nTrade register \nhttps://www.jerseyfsc.org/registry/\nPost\nhttps://www.jerseypost.com/tools/address-finder/?string=&first=0&search=Find+an+Address\nGuernsey\nTrade register \nhttps://www.greg.gg/webCompSearch.aspx\nPost \nhttps://www.guernseypost.com/address-and-postcode-finder\nCorporate Code System - Country and Regions\n​​​​​​​ISO 20275: Entity Legal Forms Code List\n​​​​​​​The ELF Code List is based on the ISO 20275. The standard was published in July 2017.\nOther sources\n[1] https://www.gov.uk/government/publications/toponymic-guidelines/toponymic-guidelines-for-map-and-other-editors-united-kingdom-of-great-britain-and-northern-ireland--2#administrative-divisions\n[2] https://www.informdirect.co.uk/company-records/company-registration-number-crn-what-is-it/​​​​​​​ ​​​​​\nUnited Kingdom\nUnited Kingdom of Great Britain and Northern Ireland\nUnited Kingdom. The address is United Kingdom of Great Britain and Northern Ireland.\nRoad\n250 miles\n500 km\n© 2025 TomTom, © 2025 Microsoft Corporation, © OpenStreetMap\nTerms\nBusiness Registration Number\nThe company registration number is 8 characters long.\nCompanies registered in England and Wales, which make up the majority of those on the company register, have an 8 digit company registration number beginning with 0. The leading zero is omitted in some places. A Limited Liability Partnership (LLP) registered in England and Wales will begin with ‘OC’ followed by 6 numbers.\nThe company registration number for limited companies in Scotland begins with ‘SC’ followed by 6 digits. The format for Scottish LLPs begins ‘SO’ followed by 6 digits.\nSimilarly, limited companies based in Northern Ireland are identified by ‘NI’ followed by 6 digits. There are also some older Northern Irish companies with company registration numbers beginning ‘R’ followed by 7 digits, but no new numbers are issued on this basis. LLPs registered in Northern Ireland have references beginning ‘NC’ followed by 6 numbers.\nThere are several other forms of company registration number, but these tend to apply to specialised type of company (e.g. Royal Charter companies begin ‘RC’) or are historic references that are no longer used for new companies. [2]\nTax Identifiers (SALESTAX_ID)\nThe following Tax Numbers can be used for Business Partners in Great Britain and Northern Ireland. UK tax numbers are not mandatory to be entered.\nBrexit impact\nAfter Brexit the GB VAT IDs assigned to Business Partners from the United Kingdom are not valid any longer for EU intra-community transactions. Hence, it has been decided by CF T 6 to remove the numbers from the VAT field in the master data (technical field in vendor accounts: LFA1-STCEG, customer accounts: KNA1-STCEG). e GB VAT IDs are still valid within UK and HMRC (Her Majesty's Revenue & Customs; UK Tax Authorities) did not revoke the numbers after Brexit.\nIf maintained the number will in CMD not be stored in the VAT number field (STCEG; Tax Number Category GB0). SALESTAX_ID has been mapped in the CMD system to Tax Number 4 (Tax Number Category GB4).\nHandling of GB VAT IDs (domestic tax number)\nIf entered the British Tax IDs is entered with 'GB' prefix.\nThe British GB VAT IDs can be verified using following HMRC website: \nhttps://www.gov.uk/check-uk-vat-number\nHandling of XI VAT IDs (Northern Ireland Protocol)\n-> Can only be maintained locally but not in CMD Layer\n​​​​​​​\nIn context of Brexit the Government of the United Kingdom and The European Commission agreed a so-called Northern Ireland protocol. Under this protocol customs checks are performed for goods on the boarder between Northern Ireland and Great Britain. Under specific circumstances such transactions can be executed under the EU tax regime. To identify legitimate business partners accordingly a new EU VAT ID category has been agreed which is prefixed with 'XI'.\nThe XI VAT Numbers can be verified using the VIES tax number verification service of the European Union: \nhttps://ec.europa.eu/taxation_customs/vies/vatRequest.html\nFormat\nIf available, the numbers should be entered without spaces.\nHint\n​​​​​​​​​​​​​​Due to technical limitations the number cannot be exchanged with CMD at the moment. These number need to be locally maintained.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_52",
+      "title": "MX",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_53",
+      "title": "Rules Alignment for Mexico (MX)",
+      "text": "Mack, Alexander (CF R 5 5)\n​\nPublished 23.10.2024",
+      "type": "subsection"
+    },
+    {
+      "id": "3_54",
+      "title": "Quality Rules for Business Partner Master Data",
+      "text": "Document version: RELEASED\nLast review date:  20 June 2024",
+      "type": "subsection"
+    },
+    {
+      "id": "3_55",
+      "title": "Purpose of this document",
+      "text": "This document outlines binding rules for all Business Partners and their addresses residing in the Mexico. These local rules supplement the base document 'Global Rules Alignment' which explains global scope and applicability as well as generally applicable handling and maintenance instructions.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_56",
+      "title": "Global Rules",
+      "text": "The aim of these country specific rules is to standardise the maintenance procedures of the below outlined attributes of Business Partner, Vendor and Customer Master Data and others ensuring high quality Master Data.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_57",
+      "title": "Scope",
+      "text": "This document is valid Siemens-wide for CMD addresses with the country code 'MX' and for all IT systems that manage business partner master data. The rules for business partners with foreign country codes are defined in the country-specific rules alignments",
+      "type": "subsection"
+    },
+    {
+      "id": "3_58",
+      "title": "Applicability",
+      "text": "These rules are applicable to all businesses and their systems regardless of their own business location except local legal requirements advise differently. Exceptions must be documented in the respective Rules Alignment document.\nThe rules are binding independently of the type of the consumer system, e.g. SAP solutions, non-SAP. This includes different SAP versions, i.e. R/3 and S/4 HANA based systems.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_59",
+      "title": "System specifics",
+      "text": "The current Corporate Master Data supplies various target systems. The S/4HANA based systems contain an improved Business Partner Master Data Model which allows central governance, maintenance and distribution over additional data attributes. The improved setup with SAP MDG  allows a centralised maintenance for most business partner master data which supports consistency of these data in all systems (please refer to system section in General Rules Alignment Section for details). Local data maintenance will not be allowed in local systems except otherwise specified.\nThese additional attributes will be added to the Rule Alignment documents as required and aligned.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_60",
+      "title": "Quality Rules for Business Partner Master Data",
+      "text": "Overview:\nDetailed Rules:\nCountry Code\nThe country code for Mexico is the ISO 3166-1- alpha-2-code MX.\nLanguage\nNational language is Spanish. English can be used as well.\nInternational Address Versions\nNational spelling according to trade register is stored in default version. Transliterated or translated version is stored in the international address version.\nCase Sensitivity\nAddresses for Business Partners customers and suppliers with the country code \"MX\" will be stored in the following way:\nNames should be written as represented in the respective register of companies, cooperatives, associations or partnerships (https://siem.economia.gob.mx/​​​​​​​).\nLegal forms have to be abbreviated or written out according to the table in the 'Legal Forms' chapter\nPostal information (postal code, city, street) should be written according to the rules of Mexican Post and outlined by the Universal Postal Union (UPU)\nUpper case should be written according to these rules.\nSpecial characters are used according to following table:\nAddresses for foreign customers and suppliers are to be written as defined by the respective country-specific rules alignment.\nNames\nName1 (CAP) will be exchanged with Name1 (CMD).\nName2 (CAP) will be exchanged with Name2 (CMD).\nName3 (CAP) will be exchanged with Name3 (CMD).\nCMD is able to store maximum 105 digits for the name information split in 3 Name fields, each contains 35 digits. If the name is longer than 105 digits CMD will abbreviate it in a meaningful way.\nAdditional information such as organizational units, contact persons or ship-to information have to be migrated to field which is not exchanged with CMD\nNames of business partners have to be maintained according to the official trade register. Names of business partners should specify the business partner completely and appropriately. The legal form or owner always follow the name. Exceptions are governmental institutions.\nFor individual names and sole proprietors, format must be first name, middle name, last name.\n​​​​​​​Abbreviations in the name\nNo abbreviations are determined.\nLegal forms\nThe legal form for Business Partners from Mexico is mandatory and it is part of the company name.\nGenerally legal names have to contain legal forms with the following exceptions:\nmedical institutions\ngovernment agencies and institutions\nsole proprietors\nThe Legal Forms list below might not be complete but is showing the commonly used legal forms. Standard ISO 20275 is providing a full list of available legal forms of the covered countries. If an unknown Legal Form is requested for a business partner the ISO standard can be used as a reference. Please raise a change request to get missing legal forms added.\nAbbreviation of legal forms\nLegal forms for customers and vendors have to be abbreviated or written out with or without dot. The following table contains the most used legal forms:\nISO standard 20275 ‘Financial Services – Entity Legal Forms (ELF)’, developed by the International Organization for Standardization. The standard was published in July 2017. Each Legal Form covered by the Standard got a so-called ELF code assigned which uniquely identifies the legal form.\nAddress Data\nAs a general rule postal information, e.g. postal code, city, street, should be written according to the rules of Mexican Post and the Universal Postal Union (UPU).\nStreet\n\"Street\" is a mandatory field.\nStreet names can be written out or abbreviated with or without dot.\nCity\nCity is mandatory. It can be verified according to Mexican Post. ​​​​​​​\nPostal code\nPostal code is a mandatory field.\nThe Mexican postal code has 5 numeric digits. It can be verified according to post.\nExample: 11300 CIUDAD DE MEXICO\nRegion\nRegion is  mandatory to complete postal information and is exchanged.\nThe ISO standard 3166-2, which is set as Siemens' corporate standard, must be used to identify subnational entities. The codes are available in the Corporate Code System (CCS).\nP.O. Box\nP.O.Box is currently not exchanged.\nP.O. Box Postal Code\nThis field is used for countries where a different postal code applies to mail that is sent to the PO box rather than to the street address of a particular business partner.\nPostal codes for group major customers also have to be entered in the field for the PO box postal code since individual customers with a shared postal code for group major customers are differentiated by means of the PO box.\nCompany Postal Codes\nPostal codes for major customers (= company postal codes), however, are assigned to one customer only and have to be entered in the field 'Company Postal Code'.\nTelephone/Fax Numbers\nTelephone and fax numbers are not mandatory and currently not exchanged with CMD. If exchanged, the CAP has to ensure to send central phone numbers (switch board numbers) only.\nMexico City, Mexico\n7:26 AM\nTuesday, Feb 25, 2025\nInteresting and helpful links\nPostal Information by Universal Postal Union (UPU)\nCommercial Register\nPost\n​​​​​​​Corporate Code System - Country and Regions\nISO 20275: Entity Legal Forms Code List\n​​​​​​​The ELF Code List is based on the ISO 20275. The standard was published in July 2017.​​​​​​​\nGERMANY - UPU\nwww.upu.int\n3 Included Not included 2.1.3 Items for the blind If there is a weight limit, please indicate it: up to 500 g up to 1 kg up to 2 kg more than 2 kg 2.1.4 Small packets If there is a weight limit, please indicate it:\nMexico\nMexico.\nRoad\n1000 miles\n1000 km\n© 2025 TomTom, © 2025 Microsoft Corporation\nTerms\nBusiness Registration Numbers\nThere is no official code for identifying business partner in Mexican trade register.\nTax Identifiers\nRFC (Clave en el Registro Federal de Contribuyente) is currently not exchanged with CMD - under revision.\nThe RFC number is 12 characters long. The format is XXX999999XXX.",
+      "type": "subsection"
+    },
+    {
+      "id": "2_61",
+      "title": "US",
+      "text": "",
+      "type": "subsection"
+    },
+    {
+      "id": "3_62",
+      "title": "Rules Alignment for United States of America (US)",
+      "text": "Mack, Alexander (CF R 5 5)\n​\nPublished 22.10.2024",
+      "type": "subsection"
+    },
+    {
+      "id": "3_63",
+      "title": "Quality Rules for Business Partner Master Data",
+      "text": "Document version:  RELEASED\nLast review date:     17 April 2024",
+      "type": "subsection"
+    },
+    {
+      "id": "3_64",
+      "title": "Purpose of this document",
+      "text": "This document outlines binding rules for all Business Partners and their addresses residing in the United States. These local rules supplement the base document 'Global Rules Alignment' which explains global scope and applicability as well as generally applicable handling and maintenance instructions.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_65",
+      "title": "Global Rules",
+      "text": "The aim of these country specific rules is to standardise the maintenance procedures of the below outlined attributes of Business Partner, Vendor and Customer Master Data and others ensuring high quality Master Data.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_66",
+      "title": "Scope",
+      "text": "This document is valid Siemens-wide for CMD addresses with the country code 'US' and for all IT systems that manage business partner master data. The rules for business partners with foreign country codes are defined in the country-specific rules alignments.\n​​​​​​​",
+      "type": "subsection"
+    },
+    {
+      "id": "3_67",
+      "title": "Applicability",
+      "text": "These rules are applicable to all businesses and their systems regardless of their own business location except local legal requirements advise differently. Exceptions must be documented in the respective Rules Alignment document.\nThe rules are binding independently of the type of the consumer system, e.g. SAP solutions, non-SAP. This includes different SAP versions, i.e. R/3 and S/4 HANA based systems.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_68",
+      "title": "System specifics",
+      "text": "The current Corporate Master Data supplies various target systems. The S/4HANA based systems contain an improved Business Partner Master Data Model which allows central governance, maintenance and distribution over additional data attributes. The improved setup with SAP MDG  allows a centralised maintenance for most business partner master data which supports consistency of these data in all systems (please refer to system section in General Rules Alignment Section for details). Local data maintenance will not be allowed in local systems except otherwise specified.\nThese additional attributes will be added to the Rule Alignment documents as required and aligned.",
+      "type": "subsection"
+    },
+    {
+      "id": "3_69",
+      "title": "Quality Rules for Business Partner Master Data",
+      "text": "Overview\nDetailed Rules\nCountry Code\nThe country code for United States is the ISO 3166-1- alpha-2-code US.\nLanguage\nNational language is English.\nInternational Address Versions\nNational spelling according to trade register is stored in default version. Transliterated or translated version is stored in the international address version.\nCase Sensitivity\nAddresses for Business Partners customers and suppliers with the country code \"US\" will be stored in the following way:\nNames should be written as represented in the respective registers of companies, cooperatives, associations or partnerships.\nLegal forms have to be abbreviated according to the table in the 'Legal Forms' chapter\nPostal information (postal code, city, street) should be written according to the rules of USPS and outlined by the Universal Postal Union (UPU)\nUpper case should be written according to these rules.\nSpecial characters are not used.\nAddresses for foreign customers and suppliers are to be written as defined by the respective country-specific rules alignment.\nNames\nName1 (CAP) will be exchanged with Name1 (CMD).\nName2 (CAP) will be exchanged with Name2 (CMD).\nName3 (CAP) will be exchanged with Name3 (CMD).\nCMD is able to store maximum 105 digits for the name information split in 3 Name fields, each contains 35 digits. If the name is longer than 105 digits CMD will abbreviate it in a meaningful way.\nAdditional information such as organizational units, contact persons or ship-to information have to be migrated to another field which is not exchanged with CMD.\nNames of business partners have to be maintained according to trade register.\nIf a business partner cannot be found in the trade register, the business partner name has to be maintained according to the information provided by the business partner (including entire given name and surname).\nFor individual names and sole proprietors, format must be first name, middle name / initial, last  \nname, title (MD etc.).\nExamples:           IBM (wrong)\nINTERNATIONAL BUSINESS MACHINES INC (correct)\nANAHEIM, CITY OF (wrong)  \n                                   CITY OF ANAHEIM (correct)\nJOHN JAMES SMITH MD (wrong)  \n                                   JOHN J SMITH MD (correct)\nIf sole proprietors are operating under a DBA/trade name the name of the company should be  \nprovided. In addition, an indicator should be set to communicate to CMD that this company does not have a legal form. For US CAPs it is mandatory to use the indicator. \n​​​​​​​\nAbbreviations in the name\nThe following term must be always abbreviated:\nAll others must be spelled out:\nException:\nNames that include acronyms as part or the entire legally registered name will not be subject to the abbreviation rule.\nExample:             UNITED STATES BANK NATIONAL ASSOCIATION (wrong)\nUS BANK NA (correct legally registered name)\nPunctuation in the name\nCommas are not permitted in the name and must be replaced with blanks.\n​​​​​​​Other punctuation must stay in the name as it will be part of the legal name.\n“THE“ and ”A“ in the name\n“THE“ and “A“ are part of the legal name and therefore must not be excluded.\n“THE” and “A” must be placed in front of the name.   ​​​​​​​\nLegal forms\nThe legal form for Business Partners from US is mandatory and it is part of the company name according to the official register.\nGenerally legal names have to contain legal forms (INC, LTD, etc.) with the following exceptions:\njoint partnerships,\nmedical institutions, imaging centers\ngovernment agencies and institutions\nlawyers\naccountants\nconsultants\neducational institutions\nsole proprietors\nThe Legal Forms list below might not be complete but is showing the commonly used legal forms. Standard ISO 20275 is providing a full list of available legal forms of the covered countries. If an unknown Legal Form is requested for a business partner the ISO standard can be used as a reference. Please raise a change request to get missing legal forms added.\nAbbreviation of legal forms\nLegal forms for customers and vendors have strictly to be abbreviated according to the following table which contains the most used legal forms:​​​​​​​\nISO standard 20275 ‘Financial Services – Entity Legal Forms (ELF)’, developed by the International Organization for Standardization. The standard was published in July 2017. Each Legal Form covered by the Standard got a so-called ELF code assigned which uniquely identifies the legal form.\nThe USA is covered by the ISO Standard ​​​​​​​\nAddress Data\nStreet\nIn general street is part of the legal address and therefore mandatory for United States. The street is maintained according to USPS.\nPunctuation\nFor Business partners with country code “US” periods, commas, dashes, hyphens and any other kind of punctuation are not permitted in the street fields. Commas, dashes, and hyphens must be replaced with blanks.\nBuilding/Floor/Suite/Apartment/ c/o information and any other second unit designators must not be stored in the fields exchanged with CMD because they might differ between customer and vendor master record or be used to indicate a special department within the company.\nP.O. Box\nIn general P.O. Box is not exchanged, but there are some exceptions:\nGarnishment Payments\nWage garnishment is a legal procedure in which a person's earnings are required by court order to be withheld by an employer for the payment of a debt such as child support.[1] In that case courts provide only PO Box information.​​​​​​​\nAssociations, sole proprietorship, and others sometimes do not have a physical address,  only a P.O. Box. If a P.O. Box is entered in trade register or is confirmed by local system, it should be accepted by CMD.\nAbbreviations in street\nFollowing abbreviations are mandatory.\nThe following directions in the street field must be abbreviated:\nRural Route\nDefinition “rural route” addresses:\nRural Route address is an artificial address that is created by United State Postal Service to deliver mail to a rural or remote location.\nRural route addresses must be stored in the Street field and not in the PO BOX field.\nThe format of a rural route address is the following: RR N BOX NN. N stands for the number. Rural Route is maintained according to USPS.\nExample:   RR 1 BOX 233\nPLEASANT HILL IL\nRemit to addresses:\nRemit to addresses – are addresses utilized in US and Canada for payment remittance - are required to have an IFA number to be referenced in the payments.\nThe remit to addresses must have a reference to the actual commercial unit (with whom the business was conducted) and ensure that the IFA number of the commercial unit can be referenced for payments.  This requirement can be accomplished through the partnering of remit to accounts to the appropriate head offices through a parent/ child relationship (where the head office is the parent and the remit to is the child).\nRemit to addresses set up and partnering of the parent/ child relation have to be approved by the respective financial organization. If a remit to with a physical address is not partnered with a commercial unit it is mandatory to exchange the entire address of the remit to with CMD.\nPO Box only remit to addresses should not be exchange with CMD.\nIn case that remit-to is a different company, the correct name with complete address has to be provided.\nIf a “sold-to”-, “order-from”-, “payer”- or “payee”-address is not linked to a head office address it is mandatory to provide that address.\nCity\n\"City\" is a mandatory field. It is maintained according to USPS.\nPostal code\nUS Postal code is mandatory and has numeric digits. The zip code can be stored in 5 digit format or the ZIP+4 format (10 digits – 5digits hyphen 4 digits; example: 12345-1234). ZIP+4 codes are not mandatory except for certain presorted mailings.\nRegion (State)\nRegion is mandatory.\nState names and state abbreviations must be stored in designated fields and not at the end of the city. The territories Puerto Rico, Guam, Northern Mariana Island, Virgin Island and  \nAmerican Samoa must be populated with their abbreviation in the country field. The region field remains blank. When using VERTEX / TAXWARE, the tax jurisdiction code must be entered manually.\nP.O. Box Postal Code\nThis field is used for countries where a different postal code applies to mail that is sent to the PO box rather than to the street address of a particular business partner.\nPostal codes for group major customers also have to be entered in the field for the PO box postal code since individual customers with a shared postal code for group major customers are differentiated by means of the PO box.\nCompany Postal Codes\nPostal codes for major customers (= company postal codes), however, are assigned to one customer only and have to be entered in the field 'Company Postal Code'.\n​​​​​​​\nTelephone/Fax Numbers\nTelephone and fax numbers are not mandatory and currently not exchanged with CMD. If exchanged, the CAP has to ensure to send central phone numbers (switch board numbers) only.\nWashington, DC\n8:28AM\nTuesday, Feb 25, 2025\nInteresting and helpful links\nPostal Information by Universal Postal Union (UPU)\nCommercial Register\nEach state has own trade register - please see links in CMD for all of them\n​​​​​​​​​​​​​​Corporate Code System - Country and Regions\nISO 20275: Entity Legal Forms Code List\n​​​​​​​The ELF Code List is based on the ISO 20275. The standard was published in July 2017.\nOther sources\n[1] https://www.dol.gov/general/topic/wages/garnishments\nGERMANY - UPU\nwww.upu.int\n3 Included Not included 2.1.3 Items for the blind If there is a weight limit, please indicate it: up to 500 g up to 1 kg up to 2 kg more than 2 kg 2.1.4 Small packets If there is a weight limit, please indicate it:\nUnited States of America\nUnited States of America.\nRoad\n1000 miles\n2500 km\n© 2025 TomTom, © 2025 Microsoft Corporation\nTerms\nBusiness Registration Numbers\nCMD uses trade register numbers for verification of Business Partners from USA. Each state has own trade register. Trade register numbers for the US (NAT_ID) are currently not maintained in CMD.\nTax Numbers\nUSA: Employer ID Number \nThe Employer Identification Number (EIN), also known as the Federal Employer Identification Number (FEIN) or the Federal Tax Identification Number, is a unique nine-digit number assigned by the Internal Revenue Service (IRS) to business entities operating in the United States for the purposes of identification. It is used in the income tax reporting to IRS. \n\n-> It is currently under evaluation whether the EIN can be verified from outside the US due to limitation of the IRS services.\n​​​​​​​USA: GIIN Number (optional)​​​​​​​\nGIIN is an abbreviation of Global Intermediary Identification Number. The FATCA Registration System approves foreign financial institutions (FFI), financial institution (FI) branches, direct reporting non-financial foreign entities (NFFE), sponsoring entities, sponsored entities, and sponsored subsidiary branches. Institutions and entities assigned a GIIN can use it to identify themselves to withholding agents and tax administrators for FATCA reporting purposes.\nThe GIIN, formatted as XXXXXX.XXXXX.XX.XXX, is a 19-character identification number made up of several identifiers. These characters will never contain the letter “O”.\n​​​​​​​Special handling required in case a Social Security Number is provided by Customer or Vendor\nUSA: Social Security Number (SSN)\nThe SSN in the US is a identification number assigned to an Individual and underlies specific US Data Privacy regulations and need to be treated restrictively. The SSN might be provided along with supporting tax payer identification documentation (so-called W-9) form.\n! The only case where the W-9 form should be accepted with a SSN on it is, if the check-box \"Individual/sole proprietor or singe-member LLC\" is ticked !\nIf a W-9 form is submitted by the Business Partner and any other box is ticked, a corrected/ updated W-9 form needs to be requested from the vendor or customer. The SSN Number should not be recorded in our systems (except mentioned box is ticked and legal form of the supplier/customer fits to it). Once the corrected W-9 form is received, the version containing the SSN number should be deleted from our systems. it\nExemplary W-9 form\nThe Social Security Number format is XXX-XX-XXXX.",
+      "type": "subsection"
+    },
+    {
+      "id": "img_70",
+      "title": "Bild (OCR)",
+      "text": "STATUSCODE MEANING PAYLOAD\n\n201 CREATED Request\nBody\n4XX BAD Error\nREQUEST description",
+      "type": "image"
+    },
+    {
+      "id": "img_71",
+      "title": "Bild (OCR)",
+      "text": ")ptions | Remote_Help\n\nToobars ;\nLocalPanel ,\nRemote Panel »\nSessions Tabs\nCommendline — Shifte CteN\n\n7] Status Br\n\nPreferences. Ctrl+Alt=P-",
+      "type": "image"
+    },
+    {
+      "id": "img_72",
+      "title": "Bild (OCR)",
+      "text": "[error\n[ inbound\n[ processed",
+      "type": "image"
+    },
+    {
+      "id": "img_73",
+      "title": "Bild (OCR)",
+      "text": "Port number:\n\nPassword:\n\nAdvanced... Ir",
+      "type": "image"
+    },
+    {
+      "id": "img_74",
+      "title": "Bild (OCR)",
+      "text": "Key x-api-key\nValue 0S 6U3 hm’tPB6elelökkkalalakkakaR\n\nAdd to Header",
+      "type": "image"
+    },
+    {
+      "id": "img_75",
+      "title": "Bild (OCR)",
+      "text": "Body Cookies Headers (8) Test Results (& Status: 400 Bad Request Time: 141 ms Size: 451B Save Response v\n\n_E\n\nPretty _ Raw — Preview — Visualize JSON v\n\n2 “message\": \"Invalid request body\",\n3 \"description: [object has missing required properties ([\\\"distributor_sender_id\\\"])]}",
+      "type": "image"
+    },
+    {
+      "id": "img_76",
+      "title": "Bild (OCR)",
+      "text": "POST v https://api.pos.siemens.com/qua/create_record",
+      "type": "image"
+    },
+    {
+      "id": "img_77",
+      "title": "Bild (OCR)",
+      "text": "Preferences\n\nEnvironment.\nInterface\n\nExplorer\n\nPanels\nFie colors\nRemote\nLocal\n\nInternal editor\nTransfer\nDrag &Drop\nBackground\nEndurance\nNetwork\nSeaurity\nLogeing\nIntegration\nApplications\n\nStorage\nUpdates\n\nTransfer settings presets\n\nPreset description\n\nText\nBinary\n\nNew and updated files only\nExclude directories\n\n55585\n\nTransfer type: Binary; Do not preserve ümestamp\n\nAdd... Edt...\n\nRemove Duplicate..\nAnnounce when transfer settings preset is autoselected",
+      "type": "image"
+    },
+    {
+      "id": "img_78",
+      "title": "Bild (OCR)",
+      "text": "TYPE PATH BODY\n[REQUIRED]\nPOST /create_record",
+      "type": "image"
+    },
+    {
+      "id": "img_79",
+      "title": "Bild (OCR)",
+      "text": "Body Cookies Headers (7) Test Results (& Status: 201 Created Time: 1162 ms Size: 3.97KB _ Save Response v\n\nmQ\n\nD ; r\n\n\"bill_to_customer_billing_address1\": \"1 Long Road Way\",\n“bill_to_customer_billing_address2\": \"optional\",\n“bill_to_customer_city\": \"Manchester\",\n\n\"bill_to_customer_countzy\": \"United Kingdom\",\n“bill_to_customer_domain_name_email_address“: \"johndoe@example.com\",\n\"bill_to_customer_duns_number\": \"123456789\",\n\n‚bill to customer name\": \"John Doe\",\n\nPretty Raw Preview — Visualze JSON v\n\n0400 500R",
+      "type": "image"
+    },
+    {
+      "id": "img_80",
+      "title": "Bild (OCR)",
+      "text": "POST v https://api.pos.siemens.com/qua/create_record\n\nParams _ Authorization Headers (8) Body® Pre-request Script Tests Settings\n\n@none ® form-data @ x-www-form-urlencoded @®raw @® binary JSON v\n\nı[ Text\n24\n\n3 \"distributor_order_taking_branch_name “Branch-Loci JavaScript\n4 \"distributor_order_taking_branch_id\":-.\"21\",\n\n5 “distributor_ship_from_branch_name\":.\"Branch-Locatiı ON\n6 \"distributor_ship_from_branch_id\":-\"11\", HTML\n7 \"distributor_ship_from_address\":.-\"890-.Fifth.Avenue\"\n\n8 \"distributor_ship_from_city\":-\"Manhattan\", XML.\n9 \"distributor_ship_from_state\": . \"NY\",\n\n10 \"distributor_ship_from_zip\":.\"10021\",\n\n11 \"distributor_ship_from_country\":-\"US\"\n\n12 \"distributor_ship_date\": - \"2022-09-27\",\n\n13 \"distributor_invoice_date\":.\"2022-09-27\",\n\n14 \"distributor_invoice_number\": -\"2345678\",\n\n15 \"distributor_invoice_line_item\":.\"1\",\n\n16 \"bill_to_customer_record_id\":.\"2094567\",\n\n17 \"bill_to_customer_duns_number\": - \"123456789\",\n\n18 \"bill_to_customer_name\": - \"Oscorp-Industries\",\n\n19 \"bill_to_customer_billing_address1\":.\"Oscorp-Tower\",\n\n20 \"bill_to_customer_billing_address2\":.\"Suite-93\",\n\n21 \"bill_to_customer_city\":-\"New-York\",\n\n22 \"bill_to_customer_state\": . \"NY\",\n\n23 \"bill_to_customer_zip\":.\"10017\",\n\n24 \"bill_to_customer_country\":-\"US\",\n\n25 \"bill_to_customer_phone_number\": - \"5555555555\",\n\n26 \"bill_to_customer_domain_name_email_address\":.\"oscorp-industries.com\",\n27 \"ship_to_customer_record_id\":-\"20912345\",",
+      "type": "image"
+    },
+    {
+      "id": "img_81",
+      "title": "Bild (OCR)",
+      "text": "Advanced Site Settings ?\n\nErwironment [D 8ypass authentication entireiy\n\nDirectories\n\nean Authentication options.\n\nEneryption [ Attempt authentication using Pageant\n\nST [ Attempt keyboard-interactive' authentication.\nConnection [Respond with a password to the frst prompt\n\nProxy\n\nTurmel Authentication parameters\nSSH Z Allow agent forwarding\n\nKey exchange\n\neaa Private key fle:\n\nBuo [Locate your ‚pp fle saved to yaur computer using the three dots—>| [\nNote\n\nDisplay Pubic Key Toos v\n\n[ Attempt GSSAPT authentication\nZ Allow GSSAPT credential delegation",
+      "type": "image"
+    },
+    {
+      "id": "img_82",
+      "title": "Bild (OCR)",
+      "text": "ransfer settings\nTransfer mode\n\n‚O Text (plain text, html, scripts,\n© öinary (archives, doc, ...)\n‚O Automatic.\n\n*. \"html; *.htm; *.bxt; *.php; *.php3; *\n\nUpload options‘ ‚Common options:\n[ set permissions: D Preserve timestamp.\nwr ( Induding directories\nTonore permission errors M] Calulate total size\n[D elear Archive’ attribute Speed (KBA): — [Unimted\nRemove BOM andEOF marks n\nEa ea\nOther\nFle mask:\nSIa\n\n] New and updated files only\n[ Exclude empty directories",
+      "type": "image"
+    }
+  ],
+  "edges": [
+    {
+      "source": "1_1",
+      "target": "2_2"
+    },
+    {
+      "source": "2_2",
+      "target": "3_3"
+    },
+    {
+      "source": "2_2",
+      "target": "3_4"
+    },
+    {
+      "source": "2_2",
+      "target": "3_5"
+    },
+    {
+      "source": "1_1",
+      "target": "2_6"
+    },
+    {
+      "source": "1_1",
+      "target": "2_7"
+    },
+    {
+      "source": "1_1",
+      "target": "2_8"
+    },
+    {
+      "source": "1_1",
+      "target": "2_9"
+    },
+    {
+      "source": "1_1",
+      "target": "2_10"
+    },
+    {
+      "source": "1_11",
+      "target": "2_12"
+    },
+    {
+      "source": "1_11",
+      "target": "2_13"
+    },
+    {
+      "source": "2_13",
+      "target": "3_14"
+    },
+    {
+      "source": "2_13",
+      "target": "3_15"
+    },
+    {
+      "source": "2_13",
+      "target": "3_16"
+    },
+    {
+      "source": "2_13",
+      "target": "3_17"
+    },
+    {
+      "source": "1_11",
+      "target": "2_18"
+    },
+    {
+      "source": "1_11",
+      "target": "2_19"
+    },
+    {
+      "source": "2_19",
+      "target": "3_20"
+    },
+    {
+      "source": "2_19",
+      "target": "3_21"
+    },
+    {
+      "source": "1_11",
+      "target": "2_22"
+    },
+    {
+      "source": "1_11",
+      "target": "2_23"
+    },
+    {
+      "source": "1_25",
+      "target": "2_26"
+    },
+    {
+      "source": "1_25",
+      "target": "2_27"
+    },
+    {
+      "source": "2_27",
+      "target": "3_28"
+    },
+    {
+      "source": "2_27",
+      "target": "3_29"
+    },
+    {
+      "source": "2_27",
+      "target": "3_30"
+    },
+    {
+      "source": "1_25",
+      "target": "2_31"
+    },
+    {
+      "source": "2_31",
+      "target": "3_32"
+    },
+    {
+      "source": "2_31",
+      "target": "3_33"
+    },
+    {
+      "source": "2_31",
+      "target": "3_34"
+    },
+    {
+      "source": "2_31",
+      "target": "3_35"
+    },
+    {
+      "source": "1_25",
+      "target": "2_36"
+    },
+    {
+      "source": "1_25",
+      "target": "2_37"
+    },
+    {
+      "source": "2_37",
+      "target": "3_38"
+    },
+    {
+      "source": "2_37",
+      "target": "3_39"
+    },
+    {
+      "source": "1_25",
+      "target": "2_40"
+    },
+    {
+      "source": "2_40",
+      "target": "3_41"
+    },
+    {
+      "source": "2_40",
+      "target": "3_42"
+    },
+    {
+      "source": "1_43",
+      "target": "2_44"
+    },
+    {
+      "source": "2_44",
+      "target": "3_45"
+    },
+    {
+      "source": "2_44",
+      "target": "3_46"
+    },
+    {
+      "source": "2_44",
+      "target": "3_47"
+    },
+    {
+      "source": "2_44",
+      "target": "3_48"
+    },
+    {
+      "source": "2_44",
+      "target": "3_49"
+    },
+    {
+      "source": "2_44",
+      "target": "3_50"
+    },
+    {
+      "source": "2_44",
+      "target": "3_51"
+    },
+    {
+      "source": "1_43",
+      "target": "2_52"
+    },
+    {
+      "source": "2_52",
+      "target": "3_53"
+    },
+    {
+      "source": "2_52",
+      "target": "3_54"
+    },
+    {
+      "source": "2_52",
+      "target": "3_55"
+    },
+    {
+      "source": "2_52",
+      "target": "3_56"
+    },
+    {
+      "source": "2_52",
+      "target": "3_57"
+    },
+    {
+      "source": "2_52",
+      "target": "3_58"
+    },
+    {
+      "source": "2_52",
+      "target": "3_59"
+    },
+    {
+      "source": "2_52",
+      "target": "3_60"
+    },
+    {
+      "source": "1_43",
+      "target": "2_61"
+    },
+    {
+      "source": "2_61",
+      "target": "3_62"
+    },
+    {
+      "source": "2_61",
+      "target": "3_63"
+    },
+    {
+      "source": "2_61",
+      "target": "3_64"
+    },
+    {
+      "source": "2_61",
+      "target": "3_65"
+    },
+    {
+      "source": "2_61",
+      "target": "3_66"
+    },
+    {
+      "source": "2_61",
+      "target": "3_67"
+    },
+    {
+      "source": "2_61",
+      "target": "3_68"
+    },
+    {
+      "source": "2_61",
+      "target": "3_69"
+    },
+    {
+      "source": "3_69",
+      "target": "img_70"
+    },
+    {
+      "source": "3_69",
+      "target": "img_71"
+    },
+    {
+      "source": "3_69",
+      "target": "img_72"
+    },
+    {
+      "source": "3_69",
+      "target": "img_73"
+    },
+    {
+      "source": "3_69",
+      "target": "img_74"
+    },
+    {
+      "source": "3_69",
+      "target": "img_75"
+    },
+    {
+      "source": "3_69",
+      "target": "img_76"
+    },
+    {
+      "source": "3_69",
+      "target": "img_77"
+    },
+    {
+      "source": "3_69",
+      "target": "img_78"
+    },
+    {
+      "source": "3_69",
+      "target": "img_79"
+    },
+    {
+      "source": "3_69",
+      "target": "img_80"
+    },
+    {
+      "source": "3_69",
+      "target": "img_81"
+    },
+    {
+      "source": "3_69",
+      "target": "img_82"
+    }
+  ]
+}

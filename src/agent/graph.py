@@ -1,0 +1,5 @@
+from imc_agents.agents.supervisor_agent import build_supervisor_graph
+from imc_agents.agents.onboarding_agent import create_onboarding_graph
+from imc_agents.agents.data_validation_agent import create_validation_graph
+
+graph = build_supervisor_graph()
