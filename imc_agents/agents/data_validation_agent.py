@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import os
 
 from imc_agents.agents.state import State
-from imc_agents.costum_llm_model import CustomChatModel
+from imc_agents.utils.custom_llm_model import CustomChatModel
 from imc_agents.utils.data_checker import DataChecker
 
 # Lade Umgebungsvariablen (z. B. API-Schlüssel)
@@ -124,6 +124,8 @@ def response_generation_node(state: State):
     Generates a natural language response based on the technical summary from the check_data_node.
     """
     technical_summary = state.get("technical_summary")
+    distributor_name = state.get("distributor_id", "")
+    
     if not technical_summary:
         return {
              "messages": state["messages"] + [AIMessage(content="Die Datenprüfung wurde durchgeführt, aber es liegt keine Zusammenfassung vor.")]
@@ -132,6 +134,8 @@ def response_generation_node(state: State):
     prompt = f"""
 Du bist ein professioneller und freundlicher Daten-Analyst für Siemens.
 Deine Aufgabe ist es, einen technischen Prüfbericht in eine hilfreiche, dialogorientierte Zusammenfassung für einen Benutzer zu übersetzen.
+
+**Distributor Name:** {distributor_name}
 
 **Dein Stil:**
 - Sprich den Benutzer direkt und freundlich an.
@@ -369,47 +373,35 @@ def create_validation_graph():
     """
     workflow = StateGraph(State)
 
-    # Knoten definieren
-    workflow.add_node("determine_next_step", determine_next_step)
-    workflow.add_node("check_data_node", check_data_node)
-    workflow.add_node("response_generation_node", response_generation_node)
-    workflow.add_node("apply_updates_node", apply_updates_node)
-    workflow.add_node("offer_recheck_node", offer_recheck_node)
+    # Knoten definieren mit beschreibenden Namen
+    workflow.add_node("Analyze Request", determine_next_step)
+    workflow.add_node("Validate Data", check_data_node)
+    workflow.add_node("Generate Response", response_generation_node)
+    workflow.add_node("Apply Corrections", apply_updates_node)
+    workflow.add_node("Offer Recheck", offer_recheck_node)
 
     # Einstiegspunkt festlegen
-    workflow.set_entry_point("determine_next_step")
+    workflow.set_entry_point("Analyze Request")
 
     # Kanten basierend auf der Logik definieren
     workflow.add_conditional_edges(
-        "determine_next_step",
+        "Analyze Request",
         lambda x: x.get("__routing__"),
         {
-            "check_data": "check_data_node",
-            "improve_data": "apply_updates_node",
+            "check_data": "Validate Data",
+            "improve_data": "Apply Corrections",
             "error": END
         }
     )
 
-    workflow.add_conditional_edges(
-        "check_data_node",
-        lambda x: x.get("__routing__"),
-        {
-            "generate_response": "response_generation_node",
-            "end": END,
-        }
-    )
+    # Validate Data always leads to Generate Response
+    workflow.add_edge("Validate Data", "Generate Response")
     
-    workflow.add_conditional_edges(
-        "apply_updates_node",
-        lambda x: x.get("__routing__"),
-        {
-            "offer_recheck": "offer_recheck_node",
-            "end": END,
-        }
-    )
+    # Apply Corrections always leads to Offer Recheck
+    workflow.add_edge("Apply Corrections", "Offer Recheck")
     
-    workflow.add_edge("response_generation_node", END)
-    workflow.add_edge("offer_recheck_node", END)
+    workflow.add_edge("Generate Response", END)
+    workflow.add_edge("Offer Recheck", END)
     
     return workflow.compile()
 

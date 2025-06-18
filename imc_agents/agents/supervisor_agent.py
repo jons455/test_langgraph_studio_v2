@@ -1,5 +1,5 @@
 from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
-from imc_agents.costum_llm_model import CustomChatModel
+from imc_agents.utils.custom_llm_model import CustomChatModel
 from langgraph.graph import StateGraph, END
 from pydantic import BaseModel, Field, model_validator
 from enum import Enum
@@ -7,6 +7,7 @@ from typing import Optional
 from imc_agents.agents.onboarding_agent import create_onboarding_graph
 from imc_agents.agents.data_validation_agent import create_validation_graph
 from imc_agents.agents.state import State
+from imc_agents.utils.memory_manager import MemoryManager, extract_distributor
 
 llm = CustomChatModel(model="GPT-4o")
 
@@ -67,15 +68,15 @@ Analysieren Sie basierend auf diesen strengen Anweisungen die Nachricht des Benu
 """
 
     try:
-        if not user_message:
-            # Wenn keine Benutzernachricht vorhanden ist, begrüßen Sie den Benutzer.
-            greeting = "Hallo, ich freue mich, Sie zu unterstützen! Was kann ich für Sie tun? Kann ich Sie beim Anbinden Ihres Systems unterstützen oder soll ich Ihre Daten prüfen?"
+        if not user_message and not state.get("has_greeted"):
+            # Wenn keine Benutzernachricht vorhanden ist und noch nicht begrüßt wurde, begrüßen Sie den Benutzer.
+            distributor_name = state.get("distributor_id", "User")
+            greeting = f"Hallo, {distributor_name}! Ich freue mich, Sie zu unterstützen! Was kann ich für Sie tun? Kann ich Sie beim Anbinden Ihres Systems unterstützen oder soll ich Ihre Daten prüfen?"
             return {
                 "messages": [AIMessage(content=greeting)],
                 "has_greeted": True,
                 "next_route": "__end__"
             }
-
 
         structured_llm = llm.with_structured_output(Route)
         decision_obj = structured_llm.invoke([
@@ -138,3 +139,28 @@ def build_supervisor_graph():
     graph.set_entry_point("Supervisor Agent")
     return graph.compile()
 
+# Entry point for handling a user request, including memory management
+def handle_request(user_input: str) -> str:
+    distributor_name = extract_distributor(user_input)
+    memory_mgr = MemoryManager(distributor_name)
+
+    # Load memory from the database at the start
+    context = memory_mgr.get_context()
+    state = {"messages": [HumanMessage(content=user_input)], "context": context}
+    graph = build_supervisor_graph()
+    result = graph.invoke(state)
+
+    # Save memory at the end of the conversation
+    memory_mgr.update_context(str(result))
+    memory_mgr.close()
+
+    return str(result)
+
+#erkennung ob onbiarding abgeschlossen ist
+def onboarding_completed(response_text: str) -> bool:
+    keywords = ["onboarding abgeschlossen", "onboarding ist fertig", "sie sind verbunden", "bereitgestellt", "erfolgreich angebunden"]
+    response_text = response_text.lower()
+    return any(kw in response_text for kw in keywords)
+ 
+ 
+ 

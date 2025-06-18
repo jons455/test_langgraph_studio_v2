@@ -4,41 +4,33 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
 class State(TypedDict):
+    # Required Fields
+    messages: Annotated[list[BaseMessage], add_messages]    # Chat history (automatically extended by LangGraph)
 
-    # 📩 Chatverlauf
-    messages: Annotated[list[BaseMessage], add_messages]    # alle bisherigen Nachrichten (wird von LangGraph automatisch erweitert)
+    # Optional Fields
+    # 1. Core Conversation State
+    task_type: Optional[str]  # 'onboarding', 'validation', 'smalltalk'
+    has_greeted: Optional[bool]  # Whether greeting has been sent
+    next_route: Optional[str]  # For supervisor routing
+    user_message: Optional[str]  # Latest user message text
 
-    # 🏷 Supervising-Level
-    task_type: Optional[str]  # z. B. 'onboarding', 'validation', 'smalltalk', vom Supervisor entschieden
-    has_greeted: Optional[bool]  # ob schon ein Begrüßungstext geschickt wurde
-    next_route: Optional[str] # For supervisor routing
+    # 2. File Management
+    file_path: Optional[str]  # Path to current original file
+    improved_file_path: Optional[str]  # Path to temporary improved file
+    file_checked: Optional[bool]  # Whether file has been checked
+    corrections_applied: Optional[bool]  # Whether corrections were applied
 
-    # 📄 Dateiverwaltung
-    file_path: Optional[str]  # Pfad zur aktuellen Originaldatei (vom User hochgeladen)
-    improved_file_path: Optional[str]  # Pfad zur temporären verbesserten Datei
+    # 3. Validation Results
+    check_results: Optional[Dict[str, Any]]  # Results from data checks
+    technical_summary: Optional[str]  # Technical summary from data check
 
-    # 🗂 Check- und Verbesserungsergebnisse
-    check_results: Optional[Dict[str, Any]]  # Ergebnisse aus Datenprüfungen (z. B. Fehlerlisten)
-    technical_summary: Optional[str] # Technical summary from a data check
-    file_checked: Optional[bool] # Flag to indicate if the file has been checked
-    corrections_applied: Optional[bool]  # Flag, ob bereits Korrekturen angewendet wurden
+    # 4. Action Control
+    next_action: Optional[str]  # Next action from determine_next_step
+    last_action: Optional[str]  # Last successfully executed action
+    distributor_id: Optional[str]
 
-    # 💬 Nutzerkontext
-    user_message: Optional[str]  # letzte User-Nachricht (nur Text, falls explizit gebraucht)
 
-    # 🔄 Entscheidungssteuerung
-    next_action: Optional[str]  # nächste Aktion aus determine_next_step (z. B. 'CHECK_DATA', 'IMPROVE_DATA')
-    last_action: Optional[str]  # letzte erfolgreich durchgeführte Aktion (z. B. 'CHECK', 'IMPROVE')
-
-    # 💬 RAG-spezifisch
-    restored_from_db: Optional[bool]  # falls aus Persistenz geladen
-    context: Optional[str]  # zusammengefasster Gesprächskontext (z. B. letzte 10 Messages)
-    generation: Optional[str]  # RAG-generierte Rohantwort
-    documents: Optional[List[str]]  # von RAG zurückgegebene Dokumentinhalte
-    draft_response: Optional[str]
-
-    restored_from_db: bool
-    context: str
-    generation: str
-    documents: List[str]
-    draft_response: str
+    # 5. RAG Context
+    context: Optional[str]  # Summarized conversation context
+    documents: Optional[List[str]]  # Documents returned by RAG
+    generation: Optional[str]  # Raw RAG-generated response
